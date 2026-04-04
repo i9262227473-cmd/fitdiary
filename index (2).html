@@ -1,0 +1,2826 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Дневник">
+<meta name="theme-color" content="#1a2a4a">
+<title>Фитнес Дневник</title>
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%231a2a4a'/><text y='130' x='90' text-anchor='middle' font-size='110'>💪</text></svg>">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;background:#f0f4f8;color:#1e2d42;max-width:480px;margin:0 auto;min-height:100vh;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px))}
+:root{--bg:#f0f4f8;--card:#fff;--border:#dde3ea;--header:#1a2a4a;--text:#1e2d42;--sub:#5a6a80;--muted:#8a9ab0;--accent:#2563eb;--accent-light:#eff6ff;--orange:#ea580c;--orange-light:#fff7ed;--green:#16a34a;--green-light:#f0fdf4;--red:#dc2626;--red-light:#fff1f1;--yellow:#d97706;--yellow-light:#fffbeb;--purple:#7c3aed;--purple-light:#f5f3ff;--teal:#0891b2;--teal-light:#ecfeff;--pink:#db2777;--pink-light:#fdf2f8;--shadow:0 2px 12px rgba(0,0,0,.08)}
+.header{background:var(--header);padding:52px 20px 16px}
+.weight-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);border-radius:20px;padding:7px 14px;cursor:pointer;margin-top:10px}
+.weight-pill-lbl{font-size:11px;color:#7a9cc8}
+.weight-pill-val{font-size:15px;font-weight:700;color:#fff}
+.header-label{font-size:11px;color:#7a9cc8;letter-spacing:3px;text-transform:uppercase;margin-bottom:3px}
+.header-title{font-size:24px;font-weight:700;color:#fff}
+.week-cal{background:var(--header);padding:0 16px 16px}
+.week-cal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.week-cal-title{font-size:12px;color:#7a9cc8;font-weight:600;text-transform:capitalize}
+.week-nav-btn{background:rgba(255,255,255,.12);border:none;color:#fff;border-radius:7px;width:26px;height:26px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;font-family:inherit}
+.week-days{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.day-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:2px 0}
+.day-name{font-size:9px;color:#7a9cc8;font-weight:600;text-transform:uppercase}
+.day-circle{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:rgba(255,255,255,.4);border:2px solid rgba(255,255,255,.1);transition:all .2s;position:relative}
+.day-circle.has-data{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.25)}
+.day-circle.is-active{background:#2563eb;color:#fff;border-color:#2563eb}
+.day-circle.is-today{border-color:#f0c060}
+.day-circle.has-workout::after{content:'';position:absolute;bottom:1px;right:1px;width:7px;height:7px;background:#22c55e;border-radius:50%;border:1.5px solid var(--header)}
+.date-nav{background:#fff;border-bottom:1px solid var(--border);padding:9px 14px;display:flex;align-items:center;gap:7px}
+.date-nav-arrow{background:var(--bg);border:1px solid var(--border);border-radius:9px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;color:var(--text);font-family:inherit}
+.date-nav-center{flex:1;text-align:center;position:relative;padding:3px 0;cursor:pointer}
+.date-nav-day{font-size:14px;font-weight:700}
+.date-nav-wd{font-size:11px;color:var(--muted);margin-top:1px}
+.date-picker-hidden{position:absolute;opacity:0;width:100%;height:100%;top:0;left:0;cursor:pointer;font-size:0}
+.today-btn{background:var(--accent);border:none;border-radius:9px;padding:6px 11px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;flex-shrink:0}
+.tabs{display:flex;background:#fff;border-bottom:2px solid var(--border);overflow-x:auto}
+.tabs::-webkit-scrollbar{display:none}
+.tab-btn{flex:0 0 auto;padding:11px 13px;background:none;border:none;border-bottom:3px solid transparent;cursor:pointer;font-size:12px;font-family:inherit;color:var(--muted);font-weight:400;margin-bottom:-2px;white-space:nowrap}
+.tab-btn.active{color:var(--accent);font-weight:700;border-bottom-color:var(--accent)}
+.content{padding:14px}
+.macro-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:9px}
+.macro-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;box-shadow:var(--shadow)}
+.macro-label{font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-bottom:5px}
+.macro-value{font-size:22px;font-weight:700;line-height:1}
+.macro-goal{font-size:11px;color:var(--muted);margin-bottom:6px}
+.progress-bar{background:var(--bg);border-radius:5px;height:6px;overflow:hidden}
+.progress-fill{height:100%;border-radius:5px;transition:width .5s}
+.macro-pct{font-size:11px;font-weight:700;margin-top:4px}
+.weight-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:10px;box-shadow:var(--shadow)}
+.weight-chart{display:flex;align-items:flex-end;gap:3px;height:42px;margin-top:7px}
+.weight-bar{flex:1;background:var(--teal);border-radius:3px 3px 0 0;min-height:3px;position:relative}
+.weight-bar-val{position:absolute;top:-15px;left:50%;transform:translateX(-50%);font-size:8px;color:var(--sub);white-space:nowrap}
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;margin-top:6px}
+.section-title{font-size:15px;font-weight:700}
+.add-btn{background:var(--accent);border:none;border-radius:17px;padding:6px 14px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+.item-card{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:11px 12px;margin-bottom:7px;box-shadow:var(--shadow)}
+.item-row{display:flex;justify-content:space-between;align-items:flex-start}
+.item-body{flex:1}
+.item-name{font-size:14px;font-weight:600}
+.item-meta{font-size:12px;color:var(--sub);margin-top:3px}
+.item-actions{display:flex;gap:5px;margin-left:7px;flex-shrink:0}
+.icon-btn{border:none;cursor:pointer;font-size:13px;width:27px;height:27px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.workout-card{background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;box-shadow:var(--shadow);overflow:hidden}
+.workout-card-hdr{padding:11px 13px;display:flex;justify-content:space-between;align-items:flex-start}
+.ex-row{border-top:1px solid var(--border);padding:8px 11px;display:flex;align-items:center;gap:8px}
+.ex-img{width:44px;height:44px;border-radius:7px;object-fit:cover;background:var(--bg);flex-shrink:0}
+.ex-ph{width:44px;height:44px;border-radius:7px;background:var(--accent-light);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:19px}
+.ex-info{flex:1;min-width:0}
+.ex-name{font-size:13px;font-weight:600}
+.ex-sets{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.set-chip{background:var(--green-light);color:var(--green);font-size:10px;font-weight:700;border-radius:5px;padding:2px 6px}
+.add-set-btn{background:none;border:1px dashed var(--border);border-radius:5px;padding:2px 7px;font-size:10px;color:var(--muted);cursor:pointer;font-family:inherit}
+.meal-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:5px;margin-top:6px}
+.food-macros{display:flex;gap:8px;margin-top:3px;font-size:11px;flex-wrap:wrap}
+.empty{text-align:center;padding:18px 0;color:var(--muted);font-size:13px}
+.hist-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px;margin-bottom:9px;box-shadow:var(--shadow)}
+.badge{border-radius:6px;padding:3px 8px;font-size:11px;font-weight:700}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:flex-end}
+.modal-box{background:#fff;border-radius:20px 20px 0 0;padding:18px 16px;width:100%;max-height:92vh;overflow-y:auto;padding-bottom:calc(30px + env(safe-area-inset-bottom,0px))}
+.modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.modal-title{font-size:16px;font-weight:700}
+.modal-close{background:var(--bg);border:none;color:var(--sub);font-size:17px;cursor:pointer;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center}
+.modal-save{width:100%;padding:14px;background:var(--accent);border:none;border-radius:11px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;margin-top:12px;font-family:inherit}
+.modal-save:disabled{background:var(--border);color:var(--muted);cursor:default}
+.field{margin-bottom:11px}
+.field-lbl{font-size:10px;color:var(--sub);font-weight:700;margin-bottom:4px;letter-spacing:.5px;text-transform:uppercase}
+.field-inp{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:9px;padding:11px 12px;color:var(--text);font-size:15px;font-family:inherit;outline:none}
+.field-inp:focus{border-color:var(--accent)}
+.field-sel{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:9px;padding:11px 12px;color:var(--text);font-size:15px;font-family:inherit;outline:none;appearance:none}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.f4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px}
+.suggestions{background:#fff;border:1.5px solid var(--accent);border-radius:9px;overflow:hidden;margin-bottom:10px;margin-top:5px;box-shadow:var(--shadow)}
+.sugg-item{width:100%;background:none;border:none;border-bottom:1px solid var(--border);padding:9px 12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-family:inherit;text-align:left}
+.sugg-item:last-child{border-bottom:none}
+.name-row{display:flex;gap:6px}
+.cam-btn{background:var(--purple);border:none;border-radius:8px;color:#fff;font-size:18px;cursor:pointer;min-width:44px;height:44px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.result-box{background:var(--accent-light);border:1.5px solid #bfdbfe;border-radius:10px;padding:11px 14px;margin-top:6px}
+.set-editor-row{display:grid;grid-template-columns:16px 1fr 1fr 1fr 22px;gap:5px;align-items:center;margin-bottom:5px}
+.set-inp{background:#fff;border:1px solid var(--border);border-radius:6px;padding:6px 4px;font-size:13px;font-family:inherit;text-align:center;outline:none;width:100%}
+.set-del{background:var(--red-light);border:none;color:var(--red);border-radius:5px;width:22px;height:22px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center}
+.add-set-row{background:none;border:1px dashed var(--border);border-radius:8px;padding:7px;width:100%;font-size:12px;color:var(--muted);cursor:pointer;font-family:inherit;text-align:center;margin-top:4px}
+.big-inp{font-size:42px;font-weight:700;text-align:center;background:none;border:none;border-bottom:3px solid var(--accent);color:var(--text);width:100%;padding:8px 0;outline:none;font-family:inherit;display:block;max-width:180px;margin:14px auto 5px}
+.mydb-intro{font-size:13px;color:var(--sub);margin-bottom:12px;line-height:1.5}
+::-webkit-scrollbar{display:none}
+</style>
+</head>
+<body>
+<div id="app"><div style="display:flex;align-items:center;justify-content:center;height:100vh;font-size:18px;color:#5a6a80">Загрузка...</div></div>
+<script>
+// Глобальный обработчик ошибок — показывает что сломалось
+window.onerror=function(msg,src,line){
+  const app=document.getElementById('app');
+  if(app)app.innerHTML='<div style="padding:30px;text-align:center;font-family:sans-serif"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div style="font-size:16px;font-weight:700;color:#dc2626;margin-bottom:8px">Ошибка</div><div style="font-size:12px;color:#5a6a80;margin-bottom:16px;word-break:break-all">'+String(msg)+'<br>Строка: '+line+'</div><button onclick="location.reload()" style="padding:10px 20px;background:#2563eb;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px">Перезагрузить</button></div>';
+  return false;
+};
+window.addEventListener('unhandledrejection',e=>console.error('Promise error:',e.reason));
+
+const SK='fit-v7',CK='fit-cdb-v2',WK='fit-wgt-v2',SUPPK='fit-supp-v1',ANALYSK='fit-analys-v1',PROFK='fit-profile-v1';
+
+// ── SUPABASE CONFIG ──
+const SB_URL='https://ijzfzvxhkpxogpqrsnzf.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlqemZ6dnhoa3B4b2dwcXJzbnpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyODEyOTQsImV4cCI6MjA5MDg1NzI5NH0.2wDtmzVDDfvY9iD08Q_SmeqwFsC4yuDCN2ZAGklSolg';
+
+// Текущий пользователь
+let currentUser=null;
+let syncTimeout=null;
+
+// ── SUPABASE API ──
+async function sbFetch(path,opts={}){
+  const headers={'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+(currentUser?.access_token||SB_KEY),...(opts.headers||{})};
+  const r=await fetch(SB_URL+path,{...opts,headers});
+  if(!r.ok){const e=await r.text();throw new Error(e);}
+  const txt=await r.text();
+  return txt?JSON.parse(txt):null;
+}
+
+// ── AUTH FUNCTIONS ──
+async function sbSignUp(email,password,name){
+  const d=await sbFetch('/auth/v1/signup',{method:'POST',body:JSON.stringify({email,password,data:{name}})});
+  return d;
+}
+async function sbSignIn(email,password){
+  const d=await sbFetch('/auth/v1/token?grant_type=password',{method:'POST',body:JSON.stringify({email,password})});
+  return d;
+}
+async function sbSignOut(){
+  try{await sbFetch('/auth/v1/logout',{method:'POST'});}catch(e){}
+  currentUser=null;
+  localStorage.removeItem('sb_session');
+}
+async function sbGetUser(token){
+  const r=await fetch(SB_URL+'/auth/v1/user',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+token}});
+  if(!r.ok)return null;
+  return r.json();
+}
+async function sbRefreshToken(refresh_token){
+  try{
+    const d=await sbFetch('/auth/v1/token?grant_type=refresh_token',{method:'POST',body:JSON.stringify({refresh_token})});
+    return d;
+  }catch(e){return null;}
+}
+
+// ── CLOUD SYNC ──
+async function cloudSave(){
+  if(!currentUser)return;
+  const payload={
+    data:S.data, weights:S.weights, custom_db:S.customDB,
+    my_supps:S.mySupps, analyses:S.analyses,
+    user_profile:S.userProfile, ai_plan:S.aiPlan,
+    updated_at:new Date().toISOString()
+  };
+  try{
+    await sbFetch('/rest/v1/diary_data?user_id=eq.'+currentUser.id,{
+      method:'PATCH',
+      headers:{'Prefer':'return=minimal'},
+      body:JSON.stringify(payload)
+    });
+  }catch(e){console.error('Cloud save error:',e);}
+}
+
+async function cloudLoad(){
+  if(!currentUser)return false;
+  try{
+    const rows=await sbFetch('/rest/v1/diary_data?user_id=eq.'+currentUser.id+'&select=*');
+    if(rows&&rows.length>0){
+      const d=rows[0];
+      if(d.data)S.data=d.data;
+      if(d.weights)S.weights=d.weights;
+      if(d.custom_db)S.customDB=d.custom_db;
+      if(d.my_supps)S.mySupps=d.my_supps;
+      if(d.analyses)S.analyses=d.analyses;
+      if(d.user_profile)S.userProfile=d.user_profile;
+      if(d.ai_plan)S.aiPlan=d.ai_plan;
+      // Restore WT from AI plan
+      if(S.aiPlan&&S.aiPlan.schedule){
+        Object.entries(S.aiPlan.schedule).forEach(([day,info])=>{
+          if(info.exercises&&info.exercises.length>0){
+            const key=`${info.name} (${day})`;
+            WT[key]=info.exercises.map(e=>e.split('—')[0].split(' — ')[0].trim());
+          }
+        });
+      }
+      return true;
+    }
+  }catch(e){console.error('Cloud load error:',e);}
+  return false;
+}
+
+// Автосохранение с задержкой (debounce)
+function scheduleSave(){
+  if(syncTimeout)clearTimeout(syncTimeout);
+  syncTimeout=setTimeout(()=>{
+    save(); // локально
+    cloudSave(); // в облако
+  },1500);
+}
+
+// ── SESSION MANAGEMENT ──
+async function initAuth(){
+  // Проверяем сохранённую сессию
+  try{
+    const sess=localStorage.getItem('sb_session');
+    if(sess){
+      const s=JSON.parse(sess);
+      // Проверяем не истёк ли токен
+      const exp=s.expires_at*1000;
+      if(Date.now()<exp-60000){
+        // Токен ещё действителен
+        currentUser={...s.user,access_token:s.access_token,refresh_token:s.refresh_token,id:s.user.id};
+        return true;
+      } else {
+        // Обновляем токен
+        const refreshed=await sbRefreshToken(s.refresh_token);
+        if(refreshed&&refreshed.access_token){
+          localStorage.setItem('sb_session',JSON.stringify(refreshed));
+          currentUser={...refreshed.user,access_token:refreshed.access_token,refresh_token:refreshed.refresh_token,id:refreshed.user.id};
+          return true;
+        }
+      }
+    }
+  }catch(e){console.error('Auth init error:',e);}
+  return false;
+}
+const BUILTIN_DB=[
+  // ── Яйца ──
+  ["Яичница",160,13,12,1,null],["Яйцо варёное",155,13,11,1,55],["Яйцо сырое",157,13,11,1,55],
+  ["Яичный белок",52,11,0,1,30],["Яичный желток",322,16,27,4,18],["Омлет",185,12,14,2,null],
+  // ── Молочные ──
+  ["Творог 0%",71,18,0,3,null],["Творог 5%",121,17,5,3,null],["Творог 9%",159,17,9,3,null],
+  ["Творог 18%",232,15,18,3,null],["Exponenta High-Pro",71,14,0,5,140],
+  ["Кефир 1%",40,3,1,4,null],["Молоко 2.5%",52,3,3,5,null],["Молоко 3.2%",60,3,3,5,null],
+  ["Сыр твёрдый",360,24,29,0,null],["Сыр плавленый",270,16,22,3,null],
+  ["Сметана 15%",158,3,15,3,null],["Йогурт натуральный",68,5,2,8,null],
+  // ── Птица ──
+  ["Куриная грудка варёная",137,25,3,0,null],
+  ["Куриная грудка жареная",197,28,9,0,null],
+  ["Куриная грудка запечённая",165,30,5,0,null],
+  ["Куриная грудка",165,31,4,0,null],
+  ["Куриное бедро",215,22,14,0,null],
+  ["Куриная голень",195,21,12,0,null],
+  ["Курица жареная",240,22,16,0,null],
+  ["Курица отварная",170,25,8,0,null],
+  ["Индейка грудка",157,30,3,0,null],
+  // ── Говядина ──
+  ["Говядина",250,26,17,0,null],
+  ["Говядина жареная",285,27,19,0,null],
+  ["Говядина тушёная",215,26,12,0,null],
+  ["Говядина запечённая",220,28,12,0,null],
+  ["Котлета говяжья",220,15,15,6,80],
+  ["Тёплый салат с говядиной",145,14,7,7,null],
+  ["Шашлык говяжий",220,25,13,0,null],
+  ["Люля говяжий",280,20,20,3,null],
+  // ── Свинина ──
+  ["Свинина",355,17,31,0,null],
+  ["Шашлык свиной",280,22,20,0,null],
+  ["Люля свиной",310,18,25,3,null],
+  ["Котлета свиная",260,14,18,6,80],
+  // ── Баранина ──
+  ["Баранина",315,17,27,0,null],
+  ["Люля из баранины",295,17,23,3,null],
+  ["Шашлык из баранины",270,20,19,0,null],
+  // ── Смешанные котлеты ──
+  ["Котлета куриная",190,16,12,5,80],
+  ["Котлета куриная домашняя",195,17,12,4,80],
+  ["Котлеты говяжьи домашние",225,15,15,5,80],
+  // ── Рыба ──
+  ["Горбуша",142,21,7,0,null],["Лосось",206,20,13,0,null],["Тунец консервы",96,22,1,0,null],
+  ["Тунец свежий",144,24,5,0,null],["Треска",82,18,1,0,null],["Минтай",72,16,1,0,null],
+  ["Скумбрия",262,18,20,0,null],["Сёмга",208,20,13,0,null],
+  // ── Крупы и гарниры ──
+  ["Гречка варёная",110,4,1,20,null],["Гречка сухая",313,12,3,62,null],
+  ["Рис белый варёный",130,3,0,28,null],
+  ["Рис отварной",130,3,0,28,null],
+  ["Картофель варёный",82,2,0,17,120],
+  ["Картофель жареный",192,2,9,24,null],
+  ["Картофельное пюре",95,2,4,14,null],
+  ["Макароны варёные",138,5,1,27,null],
+  ["Макароны с маслом",165,5,5,27,null],
+  ["Макароны с соусом",155,6,4,24,null],
+  ["Овсянка варёная",88,3,2,15,null],["Овсянка сухая",342,12,7,59,null],
+  // ── Хлеб ──
+  ["Хлеб белый",265,8,3,49,25],["Хлеб чёрный",207,7,1,40,25],
+  ["Хлеб цельнозерновой",237,9,3,43,25],["Блин",233,7,8,33,55],
+  // ── Салаты ──
+  ["Салат Оливье",197,6,14,12,null],
+  ["Оливье с колбасой",210,5,15,13,null],
+  ["Оливье с курицей",180,8,12,11,null],
+  ["Селёдка под шубой",165,5,11,13,null],
+  ["Крабовый салат",110,8,5,10,null],
+  ["Царский салат с креветками",130,12,7,6,null],
+  ["Салат с рукколой и креветками",120,13,6,5,null],
+  ["Салат с жареными баклажанами",95,2,7,8,null],
+  ["Салат с хрустящими баклажанами",145,3,10,12,null],
+  ["Тёплый салат с говядиной",145,14,7,7,null],
+  ["Греческий салат",95,2,7,7,null],
+  ["Салат Цезарь с курицей",140,11,9,6,null],
+  ["Салат из свежих овощей",35,1,2,4,null],
+  // ── Супы ──
+  ["Борщ",50,3,2,6,null],
+  ["Борщ домашний",65,4,3,7,null],
+  ["Суп куриный",46,4,2,4,null],
+  ["Куриный суп с лапшой",55,5,2,6,null],
+  ["Харчо",95,6,4,10,null],
+  ["Довга (суп из кефира)",48,3,2,5,null],
+  ["Щи",40,2,2,5,null],
+  ["Солянка",75,5,4,5,null],
+  ["Уха",45,5,2,3,null],
+  // ── Кавказская кухня ──
+  ["Хинкали говяжьи",200,12,9,20,50],
+  ["Хинкали куриные",175,11,7,20,50],
+  ["Хинкали свиные",215,11,12,20,50],
+  ["Долма (голубцы в виноградных листьях)",150,10,8,11,30],
+  ["Голубцы с говядиной",130,9,7,10,null],
+  ["Голубцы домашние",130,9,7,10,null],
+  // ── Блюда с соусами ──
+  ["Говядина терияки",175,20,7,9,null],
+  ["Курица в соусе карри",165,18,8,6,null],
+  ["Курица в сливочном соусе",210,20,13,4,null],
+  // ── Запечённое и тушёное ──
+  ["Лазанья",170,10,8,16,null],
+  ["Лазанья мясная",185,11,9,16,null],
+  // ── Овощи ──
+  ["Брокколи",34,3,0,7,null],["Огурец",15,1,0,3,120],["Помидор",18,1,0,4,130],
+  ["Морковь",41,1,0,10,80],["Болгарский перец",31,1,0,7,150],
+  ["Баклажан жареный",105,1,8,8,null],
+  ["Баклажан запечённый",55,1,3,7,null],
+  // ── Фрукты ──
+  ["Яблоко",52,0,0,14,180],["Банан",89,1,0,23,120],
+  ["Апельсин",47,1,0,12,200],["Груша",57,0,0,15,170],["Клубника",32,1,0,8,15],
+  // ── Орехи ──
+  ["Грецкий орех",654,15,65,7,5],["Миндаль",579,21,50,22,1],["Арахис",567,26,49,16,1],
+  // ── Масла ──
+  ["Масло сливочное",748,1,82,1,null],["Масло растительное",884,0,100,0,null],
+  // ── Готовые блюда ──
+  ["Пельмени",275,12,12,27,15],
+  ["Вареники с картошкой",210,5,5,37,null],
+  ["Вареники с творогом",215,8,6,34,null],
+  // ── Спортпит ──
+  ["Протеин сывороточный",380,75,4,8,null],
+  // ── Прочее ──
+  ["Мёд",304,0,0,82,null],["Сахар",387,0,0,100,null],
+  ["Кофе чёрный",2,0,0,0,null],["Чай без сахара",1,0,0,0,null],
+];
+const EX_IMGS={"Жим гантелей лёжа":"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Bench_press_2.jpg/200px-Bench_press_2.jpg","Тяга верхнего блока":"https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Lat_pulldown.jpg/200px-Lat_pulldown.jpg","Тяга горизонтального блока":"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Seated_cable_row.jpg/200px-Seated_cable_row.jpg","Тяга гантели одной рукой":"https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/One-arm-dumbbell-row-everton.jpg/200px-One-arm-dumbbell-row-everton.jpg","Подъём гантелей на бицепс":"https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Dumbbell_Bicep_Curl.jpg/200px-Dumbbell_Bicep_Curl.jpg","Жим гантелей сидя":"https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Seated_Dumbbell_Press.jpg/200px-Seated_Dumbbell_Press.jpg","Махи в стороны":"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Lateral_raise.jpg/200px-Lateral_raise.jpg","Скручивания":"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Crunches.jpg/200px-Crunches.jpg","Планка":"https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Plank_pose.jpg/200px-Plank_pose.jpg","Разгибание ног в тренажёре":"https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Leg_extension.jpg/200px-Leg_extension.jpg","Сгибание ног лёжа":"https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Lying_Leg_Curl.jpg/200px-Lying_Leg_Curl.jpg","Подъём на икры сидя":"https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Seated_calf_raise.jpg/200px-Seated_calf_raise.jpg","Подъём штанги на бицепс":"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Barbell_curl.jpg/200px-Barbell_curl.jpg","Молотки с гантелями":"https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Hammer_curl.jpg/200px-Hammer_curl.jpg"};
+function exE(n){if(n.includes('Жим'))return'🏋️';if(n.includes('Тяга'))return'💪';if(n.includes('Подъём'))return'💪';if(n.includes('Скручивания')||n.includes('Планка'))return'🤸';if(n.includes('Велотренажёр'))return'🚴';return'🏋️';}
+const WT={"Грудь + Трицепс":["Жим гантелей лёжа","Жим в тренажёре Хаммер","Разводка гантелей","Кроссовер","Французский жим","Разгибание на блоке"],"Спина + Бицепс":["Тяга верхнего блока","Тяга горизонтального блока","Тяга гантели одной рукой","Пуловер на блоке","Подъём гантелей на бицепс","Концентрированный подъём"],"Плечи + Пресс":["Жим гантелей сидя","Махи в стороны","Махи в наклоне","Тяга к подбородку","Скручивания","Планка"],"Ноги (адаптированные)":["Разгибание ног в тренажёре","Сгибание ног лёжа","Отведение ноги в кроссовере","Подъём на икры сидя","Велотренажёр 15 мин"],"Грудь + Спина (лёгкий)":["Кроссовер грудь","Пуловер на блоке","Жим в тренажёре","Тяга горизонтального блока","Разводка гантелей","Тяга верхнего блока узким хватом"],"Руки + Пресс":["Подъём штанги на бицепс","Молотки с гантелями","Разгибание на блоке","Жим узким хватом","Скручивания","Боковая планка"],"Эллипс 60 мин":["Разминка 10 мин","Основная часть 40 мин","Заминка 10 мин"]};
+// ── БАЗА ДОБАВОК: [название, категория, описание, рекомендуемая доза]
+const SUPP_DB = [
+  // Витамины
+  ["Витамин A","Витамины","Зрение, иммунитет, кожа","10000 МЕ/день"],
+  ["Витамин B1 (Тиамин)","Витамины","Нервная система, энергия","1.5 мг/день"],
+  ["Витамин B2 (Рибофлавин)","Витамины","Энергия, метаболизм","1.8 мг/день"],
+  ["Витамин B3 (Ниацин)","Витамины","Сердце, холестерин","20 мг/день"],
+  ["Витамин B5 (Пантотеновая кислота)","Витамины","Надпочечники, энергия","5 мг/день"],
+  ["Витамин B6","Витамины","Нервная система, белковый обмен","2 мг/день"],
+  ["Витамин B7 (Биотин)","Витамины","Волосы, ногти, кожа","50 мкг/день"],
+  ["Витамин B9 (Фолиевая кислота)","Витамины","Клеточное деление, сосуды","400 мкг/день"],
+  ["Витамин B12","Витамины","Нервы, кроветворение, энергия","1000 мкг/день"],
+  ["Витамин C","Витамины","Иммунитет, антиоксидант, коллаген","500–1000 мг/день"],
+  ["Витамин D3","Витамины","Кости, иммунитет, тестостерон","2000–5000 МЕ/день"],
+  ["Витамин E","Витамины","Антиоксидант, сердце","400 МЕ/день"],
+  ["Витамин K2","Витамины","Кости, сердце (важно при клапане)","100 мкг/день"],
+  ["Комплекс B","Витамины","Все витамины группы B","1 капсула/день"],
+  // Минералы
+  ["Магний","Минералы","Мышцы, сердце, сон, нервы","400 мг/день"],
+  ["Магний глицинат","Минералы","Лучшее усвоение, сон","300–400 мг/день"],
+  ["Цинк","Минералы","Иммунитет, тестостерон, заживление","25–50 мг/день"],
+  ["Кальций","Минералы","Кости, мышцы, сердце","1000 мг/день"],
+  ["Калий","Минералы","Сердце, давление, мышцы","3500 мг/день"],
+  ["Железо","Минералы","Кроветворение, энергия","18 мг/день"],
+  ["Селен","Минералы","Щитовидная железа, антиоксидант","200 мкг/день"],
+  ["Хром","Минералы","Контроль сахара","200 мкг/день"],
+  ["Йод","Минералы","Щитовидная железа","150 мкг/день"],
+  // Омега и жирные кислоты
+  ["Омега-3","Жирные кислоты","Сердце, суставы, мозг","2000–3000 мг/день"],
+  ["Омега-3 (рыбий жир)","Жирные кислоты","Триглицериды, воспаление","2–3 г/день"],
+  ["Льняное масло","Жирные кислоты","АЛК омега-3, суставы","1 ст. л./день"],
+  ["Коэнзим Q10","Антиоксиданты","Сердце, энергия (важно при статинах)","100–200 мг/день"],
+  // Для суставов
+  ["Глюкозамин","Суставы","Хрящи, суставная жидкость","1500 мг/день"],
+  ["Хондроитин","Суставы","Восстановление хряща","1200 мг/день"],
+  ["Коллаген","Суставы","Связки, суставы, кожа","10–15 г/день"],
+  ["MSM (метилсульфонилметан)","Суставы","Воспаление, боль в суставах","1000–2000 мг/день"],
+  ["Куркумин","Суставы","Противовоспалительное, суставы","500–1000 мг/день"],
+  // Для сердца
+  ["Магний таурат","Сердце","Сердечный ритм, давление","400 мг/день"],
+  ["L-Карнитин","Сердце","Энергия сердца, жиросжигание","1000–2000 мг/день"],
+  ["Боярышник","Сердце","Сердечная функция, давление","1000 мг/день"],
+  ["Наттокиназа","Сердце","Разжижение крови (осторожно с варфарином!)","100–200 мг/день"],
+  // Спортивные
+  ["Креатин","Спортивные","Сила, мышечная масса","5 г/день"],
+  ["BCAA","Спортивные","Восстановление мышц","5–10 г до/после"],
+  ["Протеин сывороточный","Спортивные","Белок для мышц","1–2 порции/день"],
+  ["Глютамин","Спортивные","Восстановление, иммунитет","5–10 г/день"],
+  ["Бета-аланин","Спортивные","Выносливость","3–6 г/день"],
+  ["Аргинин","Спортивные","Кровоток, насос","3–6 г до тренировки"],
+  // Адаптогены
+  ["Ашваганда","Адаптогены","Кортизол, тестостерон, стресс","300–600 мг/день"],
+  ["Родиола розовая","Адаптогены","Энергия, стресс, выносливость","400 мг/день"],
+  ["Женьшень","Адаптогены","Энергия, иммунитет","200–400 мг/день"],
+  ["Элеутерококк","Адаптогены","Выносливость, иммунитет","300 мг/день"],
+  // Пробиотики
+  ["Пробиотики","Пробиотики","Кишечник, иммунитет","10 млрд КОЕ/день"],
+  ["Пребиотики","Пробиотики","Питание для полезных бактерий","5–10 г/день"],
+  // Прочие
+  ["Мелатонин","Сон","Качество сна, восстановление","1–3 мг перед сном"],
+  ["5-HTP","Сон","Серотонин, настроение, сон","100 мг/день"],
+  ["Альфа-липоевая кислота","Антиоксиданты","Антиоксидант, сахар","300–600 мг/день"],
+  ["Ликопин","Антиоксиданты","Сердце, простата","10–30 мг/день"],
+  ["Ресвератрол","Антиоксиданты","Сосуды, антиокисление","150–500 мг/день"],
+  ["Цинк + Магний (ZMA)","Минералы","Тестостерон, сон, восстановление","1 порция перед сном"],
+  ["Витамин D3 + K2","Витамины","Кальций, кости, сердце","1 капсула/день"],
+];
+
+const SUPP_CATS = [...new Set(SUPP_DB.map(s=>s[1]))];
+const SUPP_TIMES = ["Утром натощак","Утром с едой","Днём с едой","Вечером с едой","Перед сном","До тренировки","После тренировки"];
+const MEALS=["Завтрак","Перекус","Обед","Полдник","Ужин"];
+const DN=["Пн","Вт","Ср","Чт","Пт","Сб","Вс"];
+
+let S={
+  data:{profile:{proteinGoal:140,fatGoal:70,carbGoal:200,calorieGoal:2100},entries:[]},
+  customDB:[],weights:[],
+  mySupps:[],
+  analyses:[],
+  userProfile:null, // null = не прошёл онбординг
+  aiPlan:null,      // сгенерированный план тренировок
+  tab:'today',selDate:null,weekOff:0,expW:{},
+  foodModal:null,workoutModal:null,weightModal:false,weightInput:'',te:null
+};
+function today(){return new Date().toISOString().split('T')[0];}
+function ad(){return S.selDate||today();}
+function addDays(ds,n){const d=new Date(ds+'T12:00:00');d.setDate(d.getDate()+n);return d.toISOString().split('T')[0];}
+function isTd(ds){return ds===today();}
+function fmtDate(ds){return new Date(ds+'T12:00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'long',weekday:'long'});}
+function fmtShort(ds){return new Date(ds+'T12:00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'short'});}
+function getWeekDates(off){const now=new Date();const dow=now.getDay()===0?6:now.getDay()-1;const mon=new Date(now);mon.setDate(now.getDate()-dow+off*7);return Array.from({length:7},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d.toISOString().split('T')[0];});}
+function recalc(e){return{...e,totalCalories:Math.round(e.foods.reduce((s,f)=>s+f.calories,0)),totalProtein:Math.round(e.foods.reduce((s,f)=>s+f.protein,0)*10)/10,totalFat:Math.round(e.foods.reduce((s,f)=>s+(f.fat||0),0)*10)/10,totalCarbs:Math.round(e.foods.reduce((s,f)=>s+(f.carbs||0),0)*10)/10};}
+function searchFood(q){if(!q||q.length<2)return[];const lq=q.toLowerCase();const all=[...BUILTIN_DB,...S.customDB.map(p=>[p.name,p.cal,p.prot,p.fat||0,p.carbs||0,p.avg||null,true])];return all.filter(([n])=>n.toLowerCase().includes(lq)).sort((a,b)=>(a[0].toLowerCase().startsWith(lq)?0:1)-(b[0].toLowerCase().startsWith(lq)?0:1)).slice(0,8);}
+function getAW(){const w=S.weights.find(x=>x.date===ad());return w?w.kg:null;}
+function load(){
+  try{const d=localStorage.getItem(SK);if(d)S.data=JSON.parse(d);}catch(e){}
+  try{const c=localStorage.getItem(CK);if(c)S.customDB=JSON.parse(c);}catch(e){}
+  try{const w=localStorage.getItem(WK);if(w)S.weights=JSON.parse(w);}catch(e){}
+  try{const s=localStorage.getItem(SUPPK);if(s)S.mySupps=JSON.parse(s);}catch(e){}
+  try{const a=localStorage.getItem(ANALYSK);if(a)S.analyses=JSON.parse(a);}catch(e){}
+  try{
+    const p=localStorage.getItem(PROFK);
+    if(p){
+      const pd=JSON.parse(p);
+      S.userProfile=pd.profile||null;
+      S.aiPlan=pd.plan||null;
+      // Restore personalized WT from saved plan
+      if(S.aiPlan&&S.aiPlan.schedule){
+        Object.entries(S.aiPlan.schedule).forEach(([day,info])=>{
+          if(info.exercises&&info.exercises.length>0){
+            const key=`${info.name} (${day})`;
+            WT[key]=info.exercises.map(e=>e.split('—')[0].split(' — ')[0].trim());
+          }
+        });
+      }
+    }
+  }catch(e){}
+}
+function save(){try{localStorage.setItem(SK,JSON.stringify(S.data));}catch(e){}scheduleSave();}
+function saveCDB(){try{localStorage.setItem(CK,JSON.stringify(S.customDB));}catch(e){}scheduleSave();}
+function saveW(){try{localStorage.setItem(WK,JSON.stringify(S.weights));}catch(e){}scheduleSave();}
+function saveSupps(){try{localStorage.setItem(SUPPK,JSON.stringify(S.mySupps));}catch(e){}scheduleSave();}
+function saveAnalyses(){try{localStorage.setItem(ANALYSK,JSON.stringify(S.analyses));}catch(e){}scheduleSave();}
+function saveProfile(){try{localStorage.setItem(PROFK,JSON.stringify({profile:S.userProfile,plan:S.aiPlan}));}catch(e){}scheduleSave();}
+
+// ── AI API (DeepSeek) ──
+const AIKEY_K='fit-aikey-v1';
+const DEFAULT_AI_KEY='sk-6a01c7472fec46d1b93db06accb15fc0';
+function getAIKey(){try{return localStorage.getItem(AIKEY_K)||DEFAULT_AI_KEY;}catch(e){return DEFAULT_AI_KEY;}}
+function setAIKey(k){try{localStorage.setItem(AIKEY_K,k);}catch(e){}}
+
+// Универсальный вызов DeepSeek API
+// Гостевой режим
+const GUEST_KEY='fit-guest-v1';
+function isGuest(){try{const g=localStorage.getItem(GUEST_KEY);if(!g)return false;const d=JSON.parse(g);return Date.now()<d.expires;}catch(e){return false;}}
+function setGuest(){localStorage.setItem(GUEST_KEY,JSON.stringify({expires:Date.now()+24*60*60*1000}));}
+function clearGuest(){localStorage.removeItem(GUEST_KEY);}
+
+async function aiCall(messages, maxTokens=600){
+  const key=getAIKey();
+  if(!key) throw new Error('NO_KEY');
+  // Таймаут 20 секунд
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),20000);
+  try{
+    const r=await fetch('https://api.deepseek.com/v1/chat/completions',{
+      method:'POST',
+      signal:controller.signal,
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+      body:JSON.stringify({model:'deepseek-chat',max_tokens:maxTokens,messages})
+    });
+    clearTimeout(timer);
+    if(!r.ok){const e=await r.text();throw new Error(e);}
+    const d=await r.json();
+    return d.choices?.[0]?.message?.content||'';
+  }catch(e){
+    clearTimeout(timer);
+    if(e.name==='AbortError')throw new Error('TIMEOUT');
+    throw e;
+  }
+}
+
+// Сканирование этикетки через DeepSeek Vision
+async function analyzeLabel(b64){
+  const key=getAIKey();
+  if(!key) throw new Error('NO_KEY');
+  // DeepSeek Vision
+  const r=await fetch('https://api.deepseek.com/v1/chat/completions',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+    body:JSON.stringify({
+      model:'deepseek-chat',
+      max_tokens:300,
+      messages:[{role:'user',content:[
+        {type:'image_url',image_url:{url:'data:image/jpeg;base64,'+b64}},
+        {type:'text',text:'Прочитай этикетку продукта. На 100г: калории, белки, жиры, углеводы. Ответь ТОЛЬКО JSON без markdown: {"name":"название","calories":123,"protein":12,"fat":5,"carbs":10}'}
+      ]}]
+    })
+  });
+  const d=await r.json();
+  const txt=d.choices?.[0]?.message?.content||'{}';
+  return JSON.parse(txt.replace(/```json|```/g,'').trim());
+}
+function h(tag,attrs,...kids){const el=document.createElement(tag);if(attrs)Object.entries(attrs).forEach(([k,v])=>{if(k==='style'&&typeof v==='object')Object.assign(el.style,v);else if(k.startsWith('on'))el.addEventListener(k.slice(2).toLowerCase(),v);else if(k==='className')el.className=v;else el.setAttribute(k,v);});kids.flat(Infinity).forEach(c=>{if(c==null||c===false)return;el.appendChild(typeof c==='string'?document.createTextNode(c):c);});return el;}
+function inp(v,ph,fn,type='text',cls='field-inp'){const el=h('input',{className:cls,type,placeholder:ph,value:v});el.addEventListener('input',e=>fn(e.target.value));return el;}
+function selEl(v,opts,fn){const s=h('select',{className:'field-sel'});opts.forEach(o=>{const op=h('option',{value:o},o);if(o===v)op.selected=true;s.appendChild(op);});s.addEventListener('change',e=>fn(e.target.value));return s;}
+function fld(lbl,el){return h('div',{className:'field'},h('div',{className:'field-lbl'},lbl),el);}
+function render(){
+  const app=document.getElementById('app');app.innerHTML='';
+  // 1. Не вошёл и не гость → экран авторизации
+  if(!currentUser&&!isGuest()){app.appendChild(renderAuth());return;}
+  // 2. Зарегистрирован, но нет профиля → онбординг
+  if(currentUser&&!S.userProfile){app.appendChild(renderOnboarding());return;}
+  // 3. Гость без профиля → сразу в приложение (без опроса)
+  const adate=ad();
+  let te=S.data.entries.find(e=>e.date===adate);
+  if(!te){te={date:adate,foods:[],workouts:[],totalCalories:0,totalProtein:0,totalFat:0,totalCarbs:0};S.data.entries.unshift(te);S.data.entries.sort((a,b)=>b.date.localeCompare(a.date));save();}
+  S.te=te;
+  app.appendChild(rHeader());
+  app.appendChild(rWeekCal());
+  app.appendChild(rDateNav());
+  app.appendChild(rTabs());
+  const ct=h('div',{className:'content'});
+  if(S.tab==='today')ct.appendChild(rToday());
+  else if(S.tab==='history')ct.appendChild(rHistory());
+  else if(S.tab==='plan')ct.appendChild(rMyPlan());
+  else if(S.tab==='supps')ct.appendChild(rSupps());
+  else if(S.tab==='analyses')ct.appendChild(rAnalyses());
+  else ct.appendChild(rMyDB());
+  app.appendChild(ct);
+  if(S.workoutModal)app.appendChild(rWorkoutModal());
+  if(S.weightModal)app.appendChild(rWeightModal());
+  // Food modal is managed separately via buildFoodModal()
+}
+function rHeader(){
+  const aw=getAW();
+  const hasKey=!!getAIKey();
+  const isGuestMode=!currentUser&&isGuest();
+  const userName=currentUser?.user_metadata?.name||currentUser?.email?.split('@')[0]||'';
+  const wrap=document.createDocumentFragment();
+
+  const hdrEl=h('div',{className:'header'},
+    h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:'2px'}},
+      h('div',{},
+        h('div',{className:'header-label'},'Фитнес дневник'),
+        h('div',{className:'header-title'},isGuestMode?'Гостевой режим 👀':(userName?'Привет, '+userName+'! 💪':'Мои тренировки'))
+      ),
+      h('div',{style:{display:'flex',gap:'6px',alignItems:'center',marginTop:'4px'}},
+        h('button',{onClick:openAISettings,style:{background:'rgba(255,255,255,.15)',border:'none',borderRadius:'10px',padding:'7px 10px',cursor:'pointer',display:'flex',alignItems:'center',gap:'4px',fontFamily:'inherit'}},
+          h('span',{style:{fontSize:'14px'}},hasKey?'🤖':'⚙️'),
+          h('span',{style:{fontSize:'10px',color:hasKey?'#86efac':'#7a9cc8',fontWeight:'600'}},hasKey?'AI':'Ключ')
+        ),
+        isGuestMode
+          ? h('button',{onClick:()=>{clearGuest();render();},style:{background:'#2563eb',border:'none',borderRadius:'10px',padding:'6px 10px',cursor:'pointer',fontFamily:'inherit',color:'#fff',fontSize:'10px',fontWeight:'700',lineHeight:'1.3'}},'Войти /\nРег-ция')
+          : h('button',{onClick:async()=>{if(confirm('Выйти из аккаунта?')){await sbSignOut();render();}},style:{background:'rgba(255,255,255,.12)',border:'none',borderRadius:'10px',padding:'7px 10px',cursor:'pointer',fontFamily:'inherit',color:'rgba(255,255,255,.7)',fontSize:'12px'}},'🚪')
+      )
+    ),
+    h('div',{className:'weight-pill',onClick:()=>{S.weightModal=true;S.weightInput=aw?String(aw):'';render();}},
+      h('span',{className:'weight-pill-lbl'},'⚖️ Вес:'),
+      h('span',{className:'weight-pill-val'},aw?aw+' кг':'— нажми')
+    )
+  );
+  wrap.appendChild(hdrEl);
+
+  // Жёлтый баннер для гостя
+  if(isGuestMode){
+    const banner=h('div',{onClick:()=>{clearGuest();render();},style:{background:'#fbbf24',padding:'8px 16px',textAlign:'center',fontSize:'12px',fontWeight:'600',color:'#78350f',cursor:'pointer'}},
+      '⏰ Гостевой режим · 24ч · Данные только на этом устройстве · Нажми для регистрации →'
+    );
+    wrap.appendChild(banner);
+  }
+  return wrap;
+}
+function rWeekCal(){
+  const wDates=getWeekDates(S.weekOff);
+  const adate=ad();const td=today();
+  const first=new Date(wDates[0]+'T12:00:00');
+  const monthLbl=first.toLocaleDateString('ru-RU',{month:'long',year:'numeric'});
+  const wrap=h('div',{className:'week-cal'});
+  const hdr=h('div',{className:'week-cal-hdr'});
+  hdr.appendChild(h('div',{className:'week-cal-title'},monthLbl));
+  const navDiv=h('div',{style:{display:'flex',gap:'5px'}});
+  navDiv.appendChild(h('button',{className:'week-nav-btn',onClick:()=>{S.weekOff--;render();}},'‹'));
+  const nb=h('button',{className:'week-nav-btn',style:{opacity:S.weekOff<0?'1':'0.3'},onClick:()=>{if(S.weekOff<0){S.weekOff++;render();}}},'›');
+  navDiv.appendChild(nb);hdr.appendChild(navDiv);wrap.appendChild(hdr);
+  const grid=h('div',{className:'week-days'});
+  wDates.forEach((date,i)=>{
+    const entry=S.data.entries.find(e=>e.date===date);
+    const hasData=entry&&(entry.foods.length>0||entry.workouts.length>0);
+    const hasWorkout=entry&&entry.workouts.length>0;
+    const isActive=date===adate;const isTodayD=date===td;const isFuture=date>td;
+    const item=h('div',{className:'day-item',onClick:()=>{if(isFuture)return;S.selDate=date===td?null:date;S.tab='today';render();}});
+    item.appendChild(h('div',{className:'day-name'},DN[i]));
+    let cls='day-circle';
+    if(isActive)cls+=' is-active';else if(hasData)cls+=' has-data';
+    if(isTodayD&&!isActive)cls+=' is-today';if(hasWorkout)cls+=' has-workout';
+    const circle=h('div',{className:cls});
+    if(hasData&&!isActive)circle.appendChild(h('span',{style:{fontSize:'14px'}},'✓'));
+    else circle.appendChild(document.createTextNode(new Date(date+'T12:00:00').getDate()));
+    item.appendChild(circle);grid.appendChild(item);
+  });
+  wrap.appendChild(grid);return wrap;
+}
+function rDateNav(){
+  const adate=ad();const isTodayD=isTd(adate);const canNext=adate<today();
+  const d=new Date(adate+'T12:00:00');
+  const dayStr=d.toLocaleDateString('ru-RU',{day:'numeric',month:'long'});
+  const wdStr=isTodayD?'Сегодня':d.toLocaleDateString('ru-RU',{weekday:'long'});
+  const nav=h('div',{className:'date-nav'});
+  nav.appendChild(h('button',{className:'date-nav-arrow',onClick:()=>{const prev=addDays(adate,-1);S.selDate=prev===today()?null:prev;const wk=getWeekDates(S.weekOff);if(!wk.includes(prev))S.weekOff--;S.tab='today';render();}},'‹'));
+  const center=h('div',{className:'date-nav-center'});
+  center.appendChild(h('div',{className:'date-nav-day',style:{color:isTodayD?'var(--accent)':'var(--text)'}},dayStr));
+  center.appendChild(h('div',{className:'date-nav-wd'},wdStr));
+  const picker=h('input',{className:'date-picker-hidden',type:'date',value:adate,max:today()});
+  picker.addEventListener('change',e=>{const val=e.target.value;if(val){S.selDate=val===today()?null:val;S.tab='today';render();}});
+  center.appendChild(picker);nav.appendChild(center);
+  nav.appendChild(h('button',{className:'date-nav-arrow',style:{opacity:canNext?'1':'0.3',cursor:canNext?'pointer':'default'},onClick:()=>{if(!canNext)return;const next=addDays(adate,1);S.selDate=next===today()?null:next;const wk=getWeekDates(S.weekOff);if(!wk.includes(next))S.weekOff++;S.tab='today';render();}},'›'));
+  if(!isTodayD)nav.appendChild(h('button',{className:'today-btn',onClick:()=>{S.selDate=null;S.weekOff=0;S.tab='today';render();}},'→ Сегодня'));
+  return nav;
+}
+function rTabs(){
+  const tabs=[['today','Сегодня'],['history','История'],['plan','📋 Мой план'],['supps','💊 Добавки'],['analyses','🩺 Анализы'],['mydb','Продукты']];
+  return h('div',{className:'tabs'},...tabs.map(([k,l])=>h('button',{className:'tab-btn'+(S.tab===k?' active':''),onClick:()=>{S.tab=k;render();}},l)));
+}
+function rToday(){
+  const te=S.te,p=S.data.profile;
+  const frag=document.createDocumentFragment();
+  if(S.weights.length>=2)frag.appendChild(rWeightChart());
+  const cp=Math.min(100,Math.round(te.totalCalories/p.calorieGoal*100));
+  const pp=Math.min(100,Math.round(te.totalProtein/p.proteinGoal*100));
+  const fp=Math.min(100,Math.round((te.totalFat||0)/p.fatGoal*100));
+  const cbp=Math.min(100,Math.round((te.totalCarbs||0)/p.carbGoal*100));
+  frag.appendChild(h('div',{className:'macro-grid'},rMacroCard('Калории',te.totalCalories,p.calorieGoal,'ккал',cp,'var(--orange)'),rMacroCard('Белок',te.totalProtein,p.proteinGoal,'г',pp,'var(--green)')));
+  frag.appendChild(h('div',{className:'macro-grid'},rMacroCard('Жиры',te.totalFat||0,p.fatGoal,'г',fp,'var(--pink)'),rMacroCard('Углеводы',te.totalCarbs||0,p.carbGoal,'г',cbp,'var(--yellow)')));
+
+  // AI ANALYSIS BUTTON
+  const aiBtn=h('button',{onClick:openAIAnalysis},
+    '🤖 AI Анализ дня'
+  );
+  aiBtn.style.cssText='width:100%;padding:12px;background:linear-gradient(135deg,#1a2a4a,#2563eb);border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:8px';
+  frag.appendChild(aiBtn);
+
+  // ПИТАНИЕ — сверху
+  frag.appendChild(h('div',{className:'section-header'},h('div',{className:'section-title'},'🍽️ Питание'),h('button',{className:'add-btn',onClick:()=>openFM()},'+ Добавить')));
+  if(!te.foods.length)frag.appendChild(h('div',{className:'empty'},'Приёмов пищи пока нет'));
+  MEALS.forEach(meal=>{const foods=te.foods.filter(f=>f.meal===meal);if(!foods.length)return;frag.appendChild(h('div',{className:'meal-label'},meal));foods.forEach(f=>frag.appendChild(rFoodCard(f)));});
+  // ТРЕНИРОВКИ — снизу
+  frag.appendChild(h('div',{className:'section-header'},h('div',{className:'section-title'},'🏋️ Тренировки'),h('button',{className:'add-btn',onClick:()=>openWM()},'+ Добавить')));
+  if(!te.workouts.length)frag.appendChild(h('div',{className:'empty'},'Тренировок пока нет'));
+  else te.workouts.forEach(w=>frag.appendChild(rWorkoutCard(w)));
+  return frag;
+}
+function rMacroCard(lbl,val,goal,unit,pct,color){return h('div',{className:'macro-card'},h('div',{className:'macro-label'},lbl),h('div',{className:'macro-value',style:{color}},String(val)),h('div',{className:'macro-goal'},'из '+goal+' '+unit),h('div',{className:'progress-bar'},h('div',{className:'progress-fill',style:{width:pct+'%',background:color}})),h('div',{className:'macro-pct',style:{color}},pct+'%'));}
+function rWeightChart(){
+  const last=S.weights.slice(-14);const vals=last.map(x=>x.kg);const mn=Math.min(...vals)-0.5,mx=Math.max(...vals)+0.5;
+  const card=h('div',{className:'weight-card'});
+  card.appendChild(h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center'}},h('div',{style:{fontSize:'13px',fontWeight:'700',color:'var(--teal)'}},'⚖️ Динамика веса'),h('div',{style:{fontSize:'11px',color:'var(--muted)'}},vals[vals.length-1]+' кг')));
+  const chart=h('div',{className:'weight-chart'});
+  last.forEach(({date,kg})=>{const pct=Math.max(5,((kg-mn)/(mx-mn))*100);const bar=h('div',{className:'weight-bar',style:{height:pct+'%'},title:fmtShort(date)+': '+kg+'кг'});bar.appendChild(h('div',{className:'weight-bar-val'},kg));chart.appendChild(bar);});
+  card.appendChild(chart);
+  card.appendChild(h('div',{style:{display:'flex',justifyContent:'space-between',marginTop:'3px'}},h('div',{style:{fontSize:'8px',color:'var(--muted)'}},fmtShort(last[0].date)),h('div',{style:{fontSize:'8px',color:'var(--muted)'}},fmtShort(last[last.length-1].date))));
+  return card;
+}
+function rWorkoutCard(w){
+  const exp=S.expW[w.id];
+  const card=h('div',{className:'workout-card'});
+  const hdr=h('div',{className:'workout-card-hdr'});
+  const body=h('div',{style:{flex:'1'}});
+  body.appendChild(h('div',{className:'item-name'},w.type));
+  body.appendChild(h('div',{className:'item-meta'},'⏱ '+w.duration+' мин'+(w.pulse?' · ❤️ '+w.pulse:'')));
+  if(w.notes)body.appendChild(h('div',{style:{fontSize:'11px',color:'var(--muted)',marginTop:'2px',fontStyle:'italic'}},w.notes));
+  const acts=h('div',{className:'item-actions'});
+  acts.appendChild(h('button',{className:'icon-btn',style:{background:'var(--bg)',color:'var(--sub)'},onClick:()=>{S.expW[w.id]=!exp;render();}},exp?'▲':'▼'));
+  acts.appendChild(h('button',{className:'icon-btn',style:{background:'var(--accent-light)',color:'var(--accent)'},onClick:()=>openWM(w)},'✏️'));
+  acts.appendChild(h('button',{className:'icon-btn',style:{background:'var(--red-light)',color:'var(--red)'},onClick:()=>{S.te.workouts=S.te.workouts.filter(x=>x.id!==w.id);save();render();}},'×'));
+  hdr.appendChild(body);hdr.appendChild(acts);card.appendChild(hdr);
+  if(exp){
+    const exList = w.customMode==='custom' ? (w.customExercises||[]) : (WT[w.type]||[]);
+    exList.forEach(exName=>{
+      const exSets=(w.exercises||{})[exName]||[];
+      const row=h('div',{className:'ex-row'});
+      const imgUrl=EX_IMGS[exName];
+      if(imgUrl){const img=h('img',{className:'ex-img',src:imgUrl,alt:exName});img.onerror=()=>img.replaceWith(h('div',{className:'ex-ph'},exE(exName)));row.appendChild(img);}
+      else row.appendChild(h('div',{className:'ex-ph'},exE(exName)));
+      const info=h('div',{className:'ex-info'});
+      info.appendChild(h('div',{className:'ex-name'},exName));
+      const sr=h('div',{className:'ex-sets'});
+      exSets.forEach(s=>sr.appendChild(h('span',{className:'set-chip'},s.weight?(s.weight+'кг×'+s.reps):(s.reps+'повт'))));
+      sr.appendChild(h('button',{className:'add-set-btn',onClick:()=>openSetEditor(w.id,exName)},exSets.length?'+ подход':'+ Подходы'));
+      info.appendChild(sr);row.appendChild(info);card.appendChild(row);
+    });
+  }
+  return card;
+}
+function rFoodCard(f){
+  return h('div',{className:'item-card'},h('div',{className:'item-row'},
+    h('div',{className:'item-body'},
+      h('div',{className:'item-name'},f.name,' ',h('span',{style:{fontSize:'11px',color:'var(--muted)',fontWeight:'400'}},f.weight+'г')),
+      h('div',{className:'food-macros'},
+        h('span',{style:{color:'var(--orange)',fontWeight:'700'}},f.calories+' ккал'),
+        h('span',{style:{color:'var(--green)',fontWeight:'600'}},'Б:'+f.protein),
+        h('span',{style:{color:'var(--pink)',fontWeight:'600'}},'Ж:'+(f.fat||0)),
+        h('span',{style:{color:'var(--yellow)',fontWeight:'600'}},'У:'+(f.carbs||0))
+      )
+    ),
+    h('div',{className:'item-actions'},
+      h('button',{className:'icon-btn',style:{background:'var(--accent-light)',color:'var(--accent)'},onClick:()=>openFM(f)},'✏️'),
+      h('button',{className:'icon-btn',style:{background:'var(--red-light)',color:'var(--red)'},onClick:()=>{S.te.foods=S.te.foods.filter(x=>x.id!==f.id);Object.assign(S.te,recalc(S.te));save();render();}},'×')
+    )
+  ));
+}
+function rHistory(){
+  const frag=document.createDocumentFragment();
+  const entries=S.data.entries.filter(e=>e.date!==ad());
+  if(!entries.length){frag.appendChild(h('div',{className:'empty'},'История пока пуста'));return frag;}
+  entries.forEach(e=>{
+    const tw=S.weights.find(x=>x.date===e.date);
+    frag.appendChild(h('div',{className:'hist-card'},
+      h('div',{style:{fontSize:'13px',fontWeight:'600',marginBottom:'7px',cursor:'pointer',color:'var(--accent)'},onClick:()=>{S.selDate=e.date===today()?null:e.date;S.tab='today';render();}},fmtDate(e.date),' →'),
+      tw?h('div',{style:{fontSize:'12px',color:'var(--teal)',fontWeight:'600',marginBottom:'5px'}},'⚖️ '+tw.kg+' кг'):null,
+      h('div',{style:{display:'flex',gap:'5px',flexWrap:'wrap',marginBottom:'4px'}},
+        h('div',{className:'badge',style:{background:'var(--orange-light)',color:'var(--orange)'}},'🔥 '+e.totalCalories+' ккал'),
+        h('div',{className:'badge',style:{background:'var(--green-light)',color:'var(--green)'}},'Б '+(e.totalProtein||0)+'г'),
+        e.totalFat?h('div',{className:'badge',style:{background:'var(--pink-light)',color:'var(--pink)'}},'Ж '+(e.totalFat||0)+'г'):null,
+        e.totalCarbs?h('div',{className:'badge',style:{background:'var(--yellow-light)',color:'var(--yellow)'}},'У '+(e.totalCarbs||0)+'г'):null
+      ),
+      e.workouts.length?h('div',{style:{fontSize:'12px',color:'var(--accent)',marginTop:'4px'}},'🏋️ '+e.workouts.map(w=>w.type).join(', ')):null,
+      e.foods.length?h('div',{style:{fontSize:'11px',color:'var(--muted)',marginTop:'3px'}},e.foods.length+' приёмов пищи'):null
+    ));
+  });
+  return frag;
+}
+function rMyDB(){
+  const frag=document.createDocumentFragment();
+  frag.appendChild(h('div',{className:'mydb-intro'},'Продукты которые ты добавил сам'));
+  if(!S.customDB.length){frag.appendChild(h('div',{style:{textAlign:'center',padding:'30px 0'}},h('div',{style:{fontSize:'34px',marginBottom:'10px'}},'📦'),h('div',{style:{fontSize:'13px',color:'var(--muted)'}},'Своих продуктов пока нет')));return frag;}
+  S.customDB.forEach(p=>frag.appendChild(h('div',{className:'item-card'},h('div',{className:'item-row'},
+    h('div',{className:'item-body'},h('div',{className:'item-name'},p.name),h('div',{className:'food-macros'},h('span',{style:{color:'var(--orange)',fontWeight:'700'}},p.cal+' ккал'),h('span',{style:{color:'var(--green)',fontWeight:'600'}},'Б:'+(p.prot||0)),h('span',{style:{color:'var(--pink)',fontWeight:'600'}},'Ж:'+(p.fat||0)),h('span',{style:{color:'var(--yellow)',fontWeight:'600'}},'У:'+(p.carbs||0)))),
+    h('div',{className:'item-actions'},h('button',{className:'icon-btn',style:{background:'var(--red-light)',color:'var(--red)'},onClick:()=>{S.customDB=S.customDB.filter(x=>x.name!==p.name);saveCDB();render();}},'×'))
+  ))));
+  return frag;
+}
+function rWeightModal(){
+  const adate=ad();const isTodayD=isTd(adate);
+  const overlay=h('div',{className:'modal-overlay'});
+  overlay.addEventListener('click',e=>{if(e.target===overlay){S.weightModal=false;render();}});
+  const box=h('div',{className:'modal-box',onClick:e=>e.stopPropagation()});
+  box.appendChild(h('div',{className:'modal-hdr'},h('div',{className:'modal-title'},'⚖️ '+(isTodayD?'Утреннее взвешивание':'Вес за '+fmtShort(adate))),h('button',{className:'modal-close',onClick:()=>{S.weightModal=false;render();}},'×')));
+  box.appendChild(h('div',{style:{textAlign:'center'}},h('div',{style:{fontSize:'11px',color:'var(--muted)',marginBottom:'6px'}},isTodayD?'Натощак, утром':'Вес за эту дату'),h('input',{className:'big-inp',type:'number',placeholder:'88.0',value:S.weightInput,oninput:e=>S.weightInput=e.target.value}),h('div',{style:{fontSize:'12px',color:'var(--muted)',marginBottom:'14px'}},'кг')));
+  if(S.weights.length){box.appendChild(h('div',{style:{fontSize:'11px',color:'var(--sub)',fontWeight:'700',marginBottom:'6px'}},'ПОСЛЕДНИЕ ЗАПИСИ'));S.weights.slice(-5).reverse().forEach(({date,kg})=>box.appendChild(h('div',{style:{display:'flex',justifyContent:'space-between',padding:'6px 0',borderBottom:'1px solid var(--border)',fontSize:'13px'}},h('span',{style:{color:'var(--sub)'}},fmtShort(date)),h('span',{style:{fontWeight:'700',color:'var(--teal)'}},kg+' кг'))));}
+  box.appendChild(h('button',{className:'modal-save',onClick:()=>{const kg=parseFloat(S.weightInput);if(!kg||kg<30||kg>300)return;const idx=S.weights.findIndex(x=>x.date===adate);if(idx>=0)S.weights[idx].kg=kg;else S.weights.push({date:adate,kg});S.weights.sort((a,b)=>a.date.localeCompare(b.date));saveW();S.weightModal=false;render();}},'Сохранить'));
+  overlay.appendChild(box);return overlay;
+}
+function openSetEditor(wId,exName){
+  const workout=S.te.workouts.find(w=>w.id===wId);if(!workout)return;
+  if(!workout.exercises)workout.exercises={};if(!workout.exercises[exName])workout.exercises[exName]=[];
+  const sets=[...workout.exercises[exName]];
+  const overlay=h('div',{className:'modal-overlay'});overlay.addEventListener('click',e=>{if(e.target===overlay)document.body.removeChild(overlay);});
+  const box=h('div',{className:'modal-box',onClick:e=>e.stopPropagation()});
+  box.appendChild(h('div',{className:'modal-hdr'},h('div',{className:'modal-title'},exName),h('button',{className:'modal-close',onClick:()=>document.body.removeChild(overlay)},'×')));
+  const imgUrl=EX_IMGS[exName];
+  if(imgUrl){const img=h('img',{src:imgUrl,alt:exName,style:{width:'100%',maxHeight:'130px',objectFit:'cover',borderRadius:'9px',marginBottom:'11px'}});img.onerror=()=>img.remove();box.appendChild(img);}
+  const ct=h('div',{});
+  function rSets(){ct.innerHTML='';
+    const hr=h('div',{className:'set-editor-row'});hr.appendChild(h('div',{}));['ПОДХОД','КГ','ПОВТ',''].forEach(t=>hr.appendChild(h('div',{className:'field-lbl',style:{textAlign:'center',fontSize:'9px'}},t)));ct.appendChild(hr);
+    sets.forEach((s,i)=>{
+      const row=h('div',{className:'set-editor-row'});
+      row.appendChild(h('div',{style:{fontSize:'11px',color:'var(--muted)',fontWeight:'600',textAlign:'center'}},String(i+1)));
+      row.appendChild(h('div',{style:{textAlign:'center',fontSize:'12px',color:'var(--accent)',fontWeight:'700'}},String(i+1)));
+      const wi=h('input',{className:'set-inp',type:'number',placeholder:'кг',value:s.weight||''});wi.addEventListener('input',e=>sets[i].weight=e.target.value?+e.target.value:null);
+      const ri=h('input',{className:'set-inp',type:'number',placeholder:'повт',value:s.reps||''});ri.addEventListener('input',e=>sets[i].reps=+e.target.value||0);
+      const db=h('button',{className:'set-del',onClick:()=>{sets.splice(i,1);rSets();}});db.textContent='×';
+      row.appendChild(wi);row.appendChild(ri);row.appendChild(db);ct.appendChild(row);
+    });
+    ct.appendChild(h('button',{className:'add-set-row',onClick:()=>{sets.push({weight:sets.length?sets[sets.length-1].weight:null,reps:sets.length?sets[sets.length-1].reps:12});rSets();}},'+ Добавить подход'));
+  }
+  rSets();box.appendChild(ct);
+  box.appendChild(h('button',{className:'modal-save',onClick:()=>{workout.exercises[exName]=sets;save();document.body.removeChild(overlay);render();}},'Сохранить'));
+  overlay.appendChild(box);document.body.appendChild(overlay);
+}
+function openFM(food){
+  S.foodModal={editing:food||null,form:food?{name:food.name,cal100:String(food.caloriesPer100||''),prot100:String(food.proteinPer100||''),fat100:String(food.fatPer100||''),carbs100:String(food.carbsPer100||''),weight:String(food.weight),meal:food.meal}:{name:'',cal100:'',prot100:'',fat100:'',carbs100:'',weight:'',meal:'Завтрак'},sugg:[],avgW:null,scanning:false,scanErr:'',showSave:false,saveAvg:''};
+  buildFoodModal();
+}
+
+function buildFoodModal(){
+  // Remove existing modal if any
+  const existing=document.getElementById('food-modal-overlay');
+  if(existing)existing.remove();
+
+  const fm=S.foodModal,f=fm.form;
+
+  const overlay=document.createElement('div');
+  overlay.id='food-modal-overlay';
+  overlay.className='modal-overlay';
+  overlay.addEventListener('click',e=>{if(e.target===overlay){S.foodModal=null;overlay.remove();render();}});
+
+  const box=document.createElement('div');
+  box.className='modal-box';
+  box.addEventListener('click',e=>e.stopPropagation());
+
+  // ── Header ──
+  const hdr=document.createElement('div');hdr.className='modal-hdr';
+  const title=document.createElement('div');title.className='modal-title';title.textContent=fm.editing?'✏️ Редактировать':'🍽️ Добавить еду';
+  const closeBtn=document.createElement('button');closeBtn.className='modal-close';closeBtn.textContent='×';
+  closeBtn.onclick=()=>{S.foodModal=null;overlay.remove();render();};
+  hdr.appendChild(title);hdr.appendChild(closeBtn);box.appendChild(hdr);
+
+  // ── Meal select ──
+  const mealDiv=document.createElement('div');mealDiv.className='field';
+  const mealLbl=document.createElement('div');mealLbl.className='field-lbl';mealLbl.textContent='ПРИЁМ ПИЩИ';
+  const mealSel=document.createElement('select');mealSel.className='field-sel';
+  MEALS.forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;if(m===f.meal)o.selected=true;mealSel.appendChild(o);});
+  mealSel.onchange=e=>f.meal=e.target.value;
+  mealDiv.appendChild(mealLbl);mealDiv.appendChild(mealSel);box.appendChild(mealDiv);
+
+  // ── Name field ──
+  const nameDiv=document.createElement('div');nameDiv.className='field';
+  const nameLbl=document.createElement('div');nameLbl.className='field-lbl';nameLbl.textContent='НАЗВАНИЕ ПРОДУКТА';
+  const nameRow=document.createElement('div');nameRow.className='name-row';
+
+  const nameInp=document.createElement('input');
+  nameInp.className='field-inp';nameInp.type='text';nameInp.placeholder='Начни вводить...';
+  nameInp.value=f.name;nameInp.style.flex='1';
+  nameInp.oninput=e=>{
+    f.name=e.target.value;
+    if(!fm.scanning){f.cal100='';f.prot100='';f.fat100='';f.carbs100='';fm.avgW=null;fm.scanErr='';}
+    fm.sugg=searchFood(f.name);
+    updateSuggestions();updateStatus();updateManualFields();updatePreview();updateSaveBtn();
+  };
+
+  // ── Camera ──
+  const camInput=document.createElement('input');
+  camInput.type='file';camInput.accept='image/*';camInput.style.display='none';
+  camInput.onchange=async e=>{
+    const file=e.target.files?.[0];if(!file)return;
+    e.target.value='';
+    fm.scanning=true;fm.scanErr='';updateStatus();
+    camBtn.textContent='⏳';camBtn.disabled=true;
+    const reader=new FileReader();
+    reader.onload=async()=>{
+      try{
+        const b64=reader.result.split(',')[1];
+        const res=await analyzeLabel(b64);
+        f.name=res.name||f.name;nameInp.value=f.name;
+        f.cal100=String(res.calories||'');f.prot100=String(res.protein||'');
+        f.fat100=String(res.fat||'');f.carbs100=String(res.carbs||'');
+        fm.sugg=[];fm.avgW=null;
+        updateSuggestions();updateManualFields();
+      }catch(err){fm.scanErr='Не удалось прочитать. Введи вручную.';}
+      fm.scanning=false;camBtn.textContent='📷';camBtn.disabled=false;
+      updateStatus();updatePreview();updateSaveBtn();
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const camBtn=document.createElement('button');
+  camBtn.className='cam-btn';camBtn.textContent='📷';camBtn.type='button';
+  camBtn.onclick=()=>camInput.click();
+
+  nameRow.appendChild(nameInp);nameRow.appendChild(camBtn);nameRow.appendChild(camInput);
+  nameDiv.appendChild(nameLbl);nameDiv.appendChild(nameRow);
+
+  const statusDiv=document.createElement('div');statusDiv.style.cssText='margin-top:4px;font-size:11px';
+  nameDiv.appendChild(statusDiv);
+  box.appendChild(nameDiv);
+
+  // ── Suggestions container ──
+  const suggContainer=document.createElement('div');
+  box.appendChild(suggContainer);
+
+  // ── Avg weight hint ──
+  const avgHint=document.createElement('div');
+  avgHint.style.cssText='background:var(--yellow-light);border:1px solid #fde68a;border-radius:8px;padding:7px 11px;margin-bottom:9px;font-size:11px;color:var(--yellow);font-weight:600;display:none';
+  box.appendChild(avgHint);
+
+  // ── Weight field ──
+  const weightDiv=document.createElement('div');weightDiv.className='field';
+  const weightLbl=document.createElement('div');weightLbl.className='field-lbl';weightLbl.textContent='ВЕС ПОРЦИИ (ГРАММЫ)';
+  const weightInp=document.createElement('input');
+  weightInp.className='field-inp';weightInp.type='number';weightInp.placeholder='150';weightInp.value=f.weight;
+  weightInp.oninput=e=>{f.weight=e.target.value;updatePreview();updateSaveBtn();};
+  weightDiv.appendChild(weightLbl);weightDiv.appendChild(weightInp);
+  box.appendChild(weightDiv);
+
+  // ── Manual fields (shown when not in DB) ──
+  const manualHint=document.createElement('div');
+  manualHint.style.cssText='background:var(--purple-light);border:1px solid #ddd6fe;border-radius:8px;padding:8px 11px;margin-bottom:9px;font-size:11px;color:var(--purple);display:none';
+  manualHint.textContent='💡 Не нашлось — введи вручную или сфотографируй 📷';
+  box.appendChild(manualHint);
+
+  const manualGrid=document.createElement('div');manualGrid.className='f4';manualGrid.style.display='none';
+  const manualDefs=[['cal100','Ккал','165'],['prot100','Белок','31'],['fat100','Жиры','5'],['carbs100','Углев','10']];
+  const manualInputs={};
+  manualDefs.forEach(([key,lbl,ph])=>{
+    const fd=document.createElement('div');fd.className='field';
+    const lb=document.createElement('div');lb.className='field-lbl';lb.style.fontSize='9px';lb.textContent=lbl;
+    const ii=document.createElement('input');ii.className='field-inp';ii.type='number';ii.placeholder=ph;
+    ii.value=f[key];ii.style.cssText='font-size:13px;padding:9px 7px';
+    ii.oninput=e=>{f[key]=e.target.value;updatePreview();updateSaveBtn();updateStatus();};
+    manualInputs[key]=ii;fd.appendChild(lb);fd.appendChild(ii);manualGrid.appendChild(fd);
+  });
+  box.appendChild(manualGrid);
+
+  // ── Save to DB button ──
+  const saveDBBtn=document.createElement('button');
+  saveDBBtn.style.cssText='width:100%;background:var(--green-light);border:1px solid #bbf7d0;border-radius:8px;padding:9px;color:var(--green);font-size:12px;font-weight:700;cursor:pointer;margin-bottom:9px;font-family:inherit;display:none';
+  saveDBBtn.textContent='💾 Сохранить в мои продукты';
+  saveDBBtn.onclick=()=>{saveDBPanel.style.display='block';saveDBBtn.style.display='none';};
+  box.appendChild(saveDBBtn);
+
+  const saveDBPanel=document.createElement('div');
+  saveDBPanel.style.cssText='background:var(--green-light);border:1px solid #bbf7d0;border-radius:9px;padding:11px;margin-bottom:9px;display:none';
+  const saveDBTitle=document.createElement('div');saveDBTitle.style.cssText='font-size:12px;color:var(--green);font-weight:700;margin-bottom:7px';
+  const avgInput=document.createElement('input');avgInput.className='field-inp';avgInput.type='number';avgInput.placeholder='Средний вес 1 шт (г) — необязательно';avgInput.style.marginBottom='7px';
+  avgInput.oninput=e=>fm.saveAvg=e.target.value;
+  const saveBtns=document.createElement('div');saveBtns.style.cssText='display:flex;gap:6px';
+  const confirmSave=document.createElement('button');
+  confirmSave.style.cssText='flex:1;background:var(--green);border:none;border-radius:8px;padding:9px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit';
+  confirmSave.textContent='Сохранить';
+  confirmSave.onclick=()=>{
+    S.customDB.push({name:f.name,cal:+f.cal100,prot:+f.prot100||0,fat:+f.fat100||0,carbs:+f.carbs100||0,avg:+fm.saveAvg||null});
+    saveCDB();saveDBPanel.style.display='none';updateSaveBtn();
+  };
+  const cancelSave=document.createElement('button');
+  cancelSave.style.cssText='background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 11px;color:var(--sub);font-size:12px;cursor:pointer;font-family:inherit';
+  cancelSave.textContent='Отмена';
+  cancelSave.onclick=()=>{saveDBPanel.style.display='none';updateSaveBtn();};
+  saveBtns.appendChild(confirmSave);saveBtns.appendChild(cancelSave);
+  saveDBPanel.appendChild(saveDBTitle);saveDBPanel.appendChild(avgInput);saveDBPanel.appendChild(saveBtns);
+  box.appendChild(saveDBPanel);
+
+  // ── Result preview ──
+  const previewBox=document.createElement('div');previewBox.className='result-box';previewBox.style.display='none';
+  const previewLbl=document.createElement('div');previewLbl.style.cssText='font-size:10px;color:var(--accent);font-weight:700;margin-bottom:7px';
+  const previewNums=document.createElement('div');previewNums.style.cssText='display:flex;gap:14px;flex-wrap:wrap';
+  previewBox.appendChild(previewLbl);previewBox.appendChild(previewNums);
+  box.appendChild(previewBox);
+
+  // ── Save button ──
+  const saveBtn=document.createElement('button');
+  saveBtn.className='modal-save';saveBtn.textContent='Сохранить';saveBtn.disabled=true;
+  saveBtn.onclick=()=>{
+    const w=+f.weight,c=+f.cal100,pr=+f.prot100||0,ft=+f.fat100||0,cb=+f.carbs100||0;
+    if(!f.name||!c||!w)return;
+    const item={id:fm.editing?fm.editing.id:Date.now(),name:f.name,meal:f.meal,weight:w,
+      caloriesPer100:c,proteinPer100:pr,fatPer100:ft,carbsPer100:cb,
+      calories:Math.round(c*w/100),protein:Math.round(pr*w/100*10)/10,
+      fat:Math.round(ft*w/100*10)/10,carbs:Math.round(cb*w/100*10)/10};
+    const te=S.te;
+    if(fm.editing)te.foods=te.foods.map(x=>x.id===fm.editing.id?item:x);
+    else te.foods.push(item);
+    Object.assign(te,recalc(te));save();
+    S.foodModal=null;overlay.remove();render();
+  };
+  box.appendChild(saveBtn);
+
+  // ── Update functions (no render!) ──
+  function updateStatus(){
+    if(fm.scanning){statusDiv.style.color='var(--purple)';statusDiv.textContent='🔍 Читаю состав...';}
+    else if(fm.scanErr){statusDiv.style.color='var(--red)';statusDiv.textContent=fm.scanErr;}
+    else if(f.cal100&&!fm.sugg.length){statusDiv.style.color='var(--green)';statusDiv.textContent='✅ '+f.cal100+' ккал · Б'+f.prot100+' · Ж'+f.fat100+' · У'+f.carbs100+' на 100г';}
+    else{statusDiv.style.color='var(--muted)';statusDiv.textContent='Введи название или нажми 📷';}
+  }
+
+  function updateSuggestions(){
+    suggContainer.innerHTML='';
+    if(!fm.sugg.length)return;
+    const sg=document.createElement('div');sg.className='suggestions';
+    fm.sugg.forEach(([name,cal,prot,fat,carbs,avg,isC])=>{
+      const btn=document.createElement('button');btn.className='sugg-item';
+      const left=document.createElement('div');
+      const nm=document.createElement('span');nm.style.cssText='font-size:13px;font-weight:500';nm.textContent=name;
+      left.appendChild(nm);
+      if(isC){const tag=document.createElement('span');tag.style.cssText='font-size:9px;color:var(--green);background:var(--green-light);border-radius:4px;padding:1px 4px;margin-left:4px;font-weight:700';tag.textContent='МОЙ';left.appendChild(tag);}
+      if(avg){const at=document.createElement('span');at.style.cssText='font-size:9px;color:var(--yellow);margin-left:4px';at.textContent='≈'+avg+'г/шт';left.appendChild(at);}
+      const right=document.createElement('div');right.style.cssText='font-size:10px;color:var(--sub);text-align:right;white-space:nowrap';
+      right.innerHTML='<b style="color:var(--orange)">'+cal+'</b>к Б'+prot+' Ж'+(fat||0)+' У'+(carbs||0);
+      btn.appendChild(left);btn.appendChild(right);
+      btn.onclick=()=>{
+        f.name=name;nameInp.value=name;
+        f.cal100=String(cal);f.prot100=String(prot);f.fat100=String(fat||0);f.carbs100=String(carbs||0);
+        fm.avgW=avg;fm.sugg=[];
+        // update manual inputs
+        if(manualInputs.cal100)manualInputs.cal100.value=f.cal100;
+        if(manualInputs.prot100)manualInputs.prot100.value=f.prot100;
+        if(manualInputs.fat100)manualInputs.fat100.value=f.fat100;
+        if(manualInputs.carbs100)manualInputs.carbs100.value=f.carbs100;
+        updateSuggestions();updateStatus();updateManualFields();updateAvgHint();updatePreview();updateSaveBtn();
+      };
+      sg.appendChild(btn);
+    });
+    suggContainer.appendChild(sg);
+  }
+
+  function updateManualFields(){
+    const show=f.name&&!f.cal100&&!fm.sugg.length&&!fm.scanning;
+    manualHint.style.display=show?'block':'none';
+    manualGrid.style.display=show?'grid':'none';
+  }
+
+  function updateAvgHint(){
+    if(fm.avgW){avgHint.style.display='block';avgHint.textContent='⚖️ 1 шт ≈ '+fm.avgW+'г → введи количество × '+fm.avgW;}
+    else avgHint.style.display='none';
+  }
+
+  function updatePreview(){
+    const c=+f.cal100,pr=+f.prot100||0,ft=+f.fat100||0,cb=+f.carbs100||0,w=+f.weight;
+    if(!c||!w){previewBox.style.display='none';return;}
+    previewBox.style.display='block';
+    previewLbl.textContent='ИТОГО ДЛЯ ПОРЦИИ '+f.weight+'г:';
+    previewNums.innerHTML='';
+    const nums=[
+      [Math.round(c*w/100),'ккал','var(--orange)'],
+      [Math.round(pr*w/100*10)/10,'белок','var(--green)'],
+      [Math.round(ft*w/100*10)/10,'жиры','var(--pink)'],
+      [Math.round(cb*w/100*10)/10,'углев','var(--yellow)'],
+    ];
+    nums.forEach(([val,lbl,color])=>{if(!val&&lbl!=='ккал')return;const d=document.createElement('div');d.innerHTML='<div style="font-size:22px;font-weight:700;color:'+color+'">'+val+'</div><div style="font-size:10px;color:var(--sub)">'+lbl+'</div>';previewNums.appendChild(d);});
+  }
+
+  function updateSaveBtn(){
+    const ok=!!(f.name&&f.name.trim()&&+f.cal100>0&&+f.weight>0);
+    saveBtn.disabled=!ok;
+    saveBtn.style.background=ok?'var(--accent)':'var(--border)';
+    saveBtn.style.color=ok?'#fff':'var(--muted)';
+    // Save to DB button
+    const inDB=S.customDB.some(p=>p.name.toLowerCase()===f.name.toLowerCase());
+    const canShow=f.name&&f.cal100&&!inDB&&saveDBPanel.style.display!=='block';
+    saveDBBtn.style.display=canShow?'block':'none';
+    if(canShow)saveDBTitle.textContent='Сохранить «'+f.name+'»';
+  }
+
+  // Initial render of dynamic parts
+  updateStatus();updateSuggestions();updateManualFields();updateAvgHint();updatePreview();updateSaveBtn();
+
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+}
+// ══════════════════════════════════════════════
+// ПОЛНАЯ БИБЛИОТЕКА УПРАЖНЕНИЙ
+// ══════════════════════════════════════════════
+const EX_LIBRARY = {
+  "🏋️ Грудь": [
+    "Жим штанги лёжа","Жим гантелей лёжа","Жим гантелей на наклонной скамье",
+    "Жим в тренажёре Хаммер","Жим в тренажёре (грудь)","Разводка гантелей лёжа",
+    "Кроссовер верхний блок","Кроссовер нижний блок","Отжимания",
+    "Отжимания на брусьях","Пуловер с гантелью"
+  ],
+  "💪 Спина": [
+    "Тяга штанги в наклоне","Тяга гантели одной рукой","Тяга верхнего блока широким хватом",
+    "Тяга верхнего блока узким хватом","Тяга горизонтального блока к поясу",
+    "Тяга горизонтального блока к груди","Пуловер на блоке","Гиперэкстензия",
+    "Подтягивания широким хватом","Подтягивания узким хватом","Шраги со штангой",
+    "Шраги с гантелями","Тяга штанги к подбородку"
+  ],
+  "🔵 Плечи": [
+    "Жим штанги стоя","Жим гантелей сидя","Жим гантелей стоя",
+    "Жим в тренажёре на плечи","Махи гантелями в стороны","Махи гантелями в наклоне",
+    "Махи гантелями перед собой","Тяга штанги к подбородку","Тяга гантели к подбородку",
+    "Разводка в кроссовере стоя","Жим Арнольда"
+  ],
+  "🦾 Бицепс": [
+    "Подъём штанги на бицепс","Подъём гантелей на бицепс","Молотки с гантелями",
+    "Концентрированный подъём","Подъём на блоке стоя","Подъём обратным хватом",
+    "Подъём на скамье Скотта","Паук-подъём","Тяга верхнего блока обратным хватом"
+  ],
+  "🔴 Трицепс": [
+    "Французский жим лёжа","Французский жим стоя","Разгибание на блоке вниз",
+    "Разгибание на блоке с канатом","Жим узким хватом","Отжимания на брусьях",
+    "Разгибание гантели за головой","Разгибание на блоке над головой","Кикбэк с гантелью"
+  ],
+  "🦵 Ноги": [
+    "Приседания со штангой","Приседания в Смите","Жим ногами в тренажёре",
+    "Разгибание ног в тренажёре","Сгибание ног лёжа","Сгибание ног стоя",
+    "Выпады с гантелями","Выпады со штангой","Румынская тяга","Мёртвая тяга",
+    "Подъём на носки стоя","Подъём на носки сидя","Отведение ноги в кроссовере",
+    "Приведение ноги в кроссовере","Ягодичный мостик","Гиперэкстензия на ноги"
+  ],
+  "🤸 Пресс": [
+    "Скручивания на полу","Скручивания на скамье","Подъём ног лёжа",
+    "Подъём ног в висе","Скручивания на блоке","Планка","Боковая планка",
+    "Велосипед","Русские скручивания","Ролик для пресса","Вакуум"
+  ],
+  "🚴 Кардио": [
+    "Беговая дорожка","Эллипс","Велотренажёр","Гребной тренажёр",
+    "Степпер","Скакалка","Прыжки","Ходьба","Плавание"
+  ],
+  "🏃 Функциональное": [
+    "Бёрпи","Прыжки на ящик","Канат (батл-роуп)","Тяга саней","Турник",
+    "Кольца","Гиря (свинг)","Гиря (рывок)","Фермерская ходьба"
+  ],
+};
+
+const ALL_EXERCISES = Object.values(EX_LIBRARY).flat();
+
+function openWM(w){
+  S.workoutModal={
+    editing:w||null,
+    mode: w ? (w.customMode||'plan') : 'plan', // 'plan' | 'custom'
+    form:w?{type:w.type||'Грудь + Трицепс',notes:w.notes||'',duration:w.duration||'60',pulse:w.pulse||'',name:w.name||''}
+          :{type:'Грудь + Трицепс',notes:'',duration:'60',pulse:'',name:''},
+    customExercises: w&&w.customExercises ? [...w.customExercises] : [],
+    exSearch: '',
+    exCategory: Object.keys(EX_LIBRARY)[0],
+  };
+  buildWorkoutModal();
+}
+
+function buildWorkoutModal(){
+  const existing=document.getElementById('workout-modal-overlay');
+  if(existing)existing.remove();
+
+  const wm=S.workoutModal, f=wm.form;
+
+  const overlay=document.createElement('div');
+  overlay.id='workout-modal-overlay';
+  overlay.className='modal-overlay';
+  overlay.addEventListener('click',e=>{if(e.target===overlay){S.workoutModal=null;overlay.remove();render();}});
+
+  const box=document.createElement('div');
+  box.className='modal-box';
+  box.addEventListener('click',e=>e.stopPropagation());
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+
+  function rebuild(){
+    box.innerHTML='';
+
+    // ── Header ──
+    const hdr=document.createElement('div');hdr.className='modal-hdr';
+    const title=document.createElement('div');title.className='modal-title';
+    title.textContent=wm.editing?'✏️ Тренировка':'🏋️ Добавить тренировку';
+    const closeBtn=document.createElement('button');closeBtn.className='modal-close';closeBtn.textContent='×';
+    closeBtn.onclick=()=>{S.workoutModal=null;overlay.remove();render();};
+    hdr.appendChild(title);hdr.appendChild(closeBtn);box.appendChild(hdr);
+
+    // ── Mode switcher ──
+    const ms=document.createElement('div');
+    ms.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px';
+    ['plan','custom'].forEach(mode=>{
+      const btn=document.createElement('button');
+      const isActive=wm.mode===mode;
+      btn.style.cssText=`padding:10px 8px;border-radius:10px;border:2px solid ${isActive?'var(--accent)':'var(--border)'};background:${isActive?'var(--accent-light)':'var(--bg)'};color:${isActive?'var(--accent)':'var(--muted)'};font-size:13px;font-weight:${isActive?'700':'400'};cursor:pointer;font-family:inherit`;
+      btn.textContent=mode==='plan'?'📋 По плану':'✍️ Своя тренировка';
+      btn.onclick=()=>{wm.mode=mode;rebuild();};
+      ms.appendChild(btn);
+    });
+    box.appendChild(ms);
+
+    // ── Duration + Pulse (always shown) ──
+    const row2=document.createElement('div');row2.className='f2';
+    const durInp=document.createElement('input');durInp.className='field-inp';durInp.type='number';durInp.placeholder='60';durInp.value=f.duration;
+    durInp.oninput=e=>f.duration=e.target.value;
+    const pulseInp=document.createElement('input');pulseInp.className='field-inp';pulseInp.type='number';pulseInp.placeholder='110';pulseInp.value=f.pulse;
+    pulseInp.oninput=e=>f.pulse=e.target.value;
+    const df1=document.createElement('div');df1.className='field';
+    df1.appendChild(Object.assign(document.createElement('div'),{className:'field-lbl',textContent:'ДЛИТЕЛЬНОСТЬ (МИН)'}));
+    df1.appendChild(durInp);
+    const df2=document.createElement('div');df2.className='field';
+    df2.appendChild(Object.assign(document.createElement('div'),{className:'field-lbl',textContent:'ПУЛЬС (УД/МИН)'}));
+    df2.appendChild(pulseInp);
+    row2.appendChild(df1);row2.appendChild(df2);box.appendChild(row2);
+
+    // ── Notes ──
+    const notesInp=document.createElement('input');notesInp.className='field-inp';notesInp.type='text';notesInp.placeholder='Как прошло?';notesInp.value=f.notes;
+    notesInp.oninput=e=>f.notes=e.target.value;
+    const nf=document.createElement('div');nf.className='field';
+    nf.appendChild(Object.assign(document.createElement('div'),{className:'field-lbl',textContent:'ЗАМЕТКИ'}));
+    nf.appendChild(notesInp);
+    box.appendChild(nf);
+
+    if(wm.mode==='plan'){
+      // ── Plan mode: select template ──
+      const typeDiv=document.createElement('div');typeDiv.className='field';
+      typeDiv.appendChild(Object.assign(document.createElement('div'),{className:'field-lbl',textContent:'ПРОГРАММА'}));
+      const typeSel=document.createElement('select');typeSel.className='field-sel';
+      Object.keys(WT).forEach(k=>{
+        const o=document.createElement('option');o.value=k;o.textContent=k;
+        if(k===f.type)o.selected=true;typeSel.appendChild(o);
+      });
+      typeSel.onchange=e=>{f.type=e.target.value;rebuild();};
+      typeDiv.appendChild(typeSel);box.appendChild(typeDiv);
+
+      // Exercise list
+      if(WT[f.type]){
+        const el=document.createElement('div');
+        el.style.cssText='background:var(--bg);border-radius:9px;padding:9px 11px';
+        const elTitle=document.createElement('div');
+        elTitle.style.cssText='font-size:10px;color:var(--sub);font-weight:700;margin-bottom:6px';
+        elTitle.textContent='УПРАЖНЕНИЯ ПЛАНА:';el.appendChild(elTitle);
+        WT[f.type].forEach(ex=>{
+          const row=document.createElement('div');
+          row.style.cssText='display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px solid var(--border)';
+          const imgUrl=EX_IMGS[ex];
+          if(imgUrl){const img=document.createElement('img');img.src=imgUrl;img.style.cssText='width:30px;height:30px;border-radius:5px;object-fit:cover;flex-shrink:0';img.onerror=()=>img.remove();row.appendChild(img);}
+          else{const ph=document.createElement('div');ph.style.cssText='width:30px;height:30px;border-radius:5px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0';ph.textContent=exE(ex);row.appendChild(ph);}
+          const nm=document.createElement('span');nm.style.fontSize='12px';nm.textContent=ex;row.appendChild(nm);
+          el.appendChild(row);
+        });
+        box.appendChild(el);
+      }
+
+    } else {
+      // ── Custom mode ──
+
+      // Workout name
+      const nameDiv=document.createElement('div');nameDiv.className='field';
+      nameDiv.appendChild(Object.assign(document.createElement('div'),{className:'field-lbl',textContent:'НАЗВАНИЕ ТРЕНИРОВКИ (НЕОБЯЗАТЕЛЬНО)'}));
+      const nameInp=document.createElement('input');nameInp.className='field-inp';nameInp.type='text';
+      nameInp.placeholder='Например: Ноги и пресс';nameInp.value=f.name||'';
+      nameInp.oninput=e=>f.name=e.target.value;
+      nameDiv.appendChild(nameInp);box.appendChild(nameDiv);
+
+      // Selected exercises
+      if(wm.customExercises.length>0){
+        const selTitle=document.createElement('div');
+        selTitle.style.cssText='font-size:11px;color:var(--green);font-weight:700;margin-bottom:6px';
+        selTitle.textContent='✅ ВЫБРАНО: '+wm.customExercises.length+' упражнений';
+        box.appendChild(selTitle);
+        const selList=document.createElement('div');
+        selList.style.cssText='background:var(--green-light);border-radius:9px;padding:8px 10px;margin-bottom:12px;border:1px solid #bbf7d0';
+        wm.customExercises.forEach((ex,i)=>{
+          const row=document.createElement('div');
+          row.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(0,0,0,.05)';
+          const nm=document.createElement('span');nm.style.cssText='font-size:13px;color:var(--text)';nm.textContent=(i+1)+'. '+ex;
+          const del=document.createElement('button');
+          del.style.cssText='background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;padding:0 4px';
+          del.textContent='×';del.onclick=()=>{wm.customExercises.splice(i,1);rebuild();};
+          row.appendChild(nm);row.appendChild(del);selList.appendChild(row);
+        });
+        box.appendChild(selList);
+      }
+
+      // Search bar
+      const searchDiv=document.createElement('div');searchDiv.className='field';
+      searchDiv.appendChild(Object.assign(document.createElement('div'),{className:'field-lbl',textContent:'ПОИСК УПРАЖНЕНИЯ'}));
+      const searchInp=document.createElement('input');searchInp.className='field-inp';
+      searchInp.type='text';searchInp.placeholder='Жим, тяга, приседания...';
+      searchInp.value=wm.exSearch;
+      searchInp.oninput=e=>{wm.exSearch=e.target.value;updateExList();};
+      searchDiv.appendChild(searchInp);box.appendChild(searchDiv);
+
+      // Category tabs
+      const catWrap=document.createElement('div');
+      catWrap.style.cssText='display:flex;gap:6px;overflow-x:auto;margin-bottom:10px;padding-bottom:2px';
+      catWrap.style.cssText+='scrollbar-width:none';
+      Object.keys(EX_LIBRARY).forEach(cat=>{
+        const btn=document.createElement('button');
+        const isAct=wm.exCategory===cat;
+        btn.style.cssText=`flex-shrink:0;padding:6px 10px;border-radius:16px;border:1.5px solid ${isAct?'var(--accent)':'var(--border)'};background:${isAct?'var(--accent)':'var(--bg)'};color:${isAct?'#fff':'var(--sub)'};font-size:11px;font-weight:${isAct?'700':'400'};cursor:pointer;font-family:inherit;white-space:nowrap`;
+        btn.textContent=cat;
+        btn.onclick=()=>{wm.exCategory=cat;searchInp.value='';wm.exSearch='';updateExList();
+          // update category buttons
+          catWrap.querySelectorAll('button').forEach(b=>{
+            const active=b.textContent===cat;
+            b.style.background=active?'var(--accent)':'var(--bg)';
+            b.style.color=active?'#fff':'var(--sub)';
+            b.style.borderColor=active?'var(--accent)':'var(--border)';
+            b.style.fontWeight=active?'700':'400';
+          });
+        };
+        catWrap.appendChild(btn);
+      });
+      box.appendChild(catWrap);
+
+      // Exercise list container
+      const exListContainer=document.createElement('div');
+      exListContainer.style.cssText='background:var(--bg);border-radius:9px;overflow:hidden;margin-bottom:10px;max-height:260px;overflow-y:auto';
+      box.appendChild(exListContainer);
+
+      function updateExList(){
+        exListContainer.innerHTML='';
+        const q=wm.exSearch.toLowerCase().trim();
+        const exercises = q
+          ? ALL_EXERCISES.filter(ex=>ex.toLowerCase().includes(q))
+          : EX_LIBRARY[wm.exCategory]||[];
+
+        if(!exercises.length){
+          const empty=document.createElement('div');
+          empty.style.cssText='padding:16px;text-align:center;color:var(--muted);font-size:13px';
+          empty.textContent='Ничего не найдено';
+          exListContainer.appendChild(empty);return;
+        }
+
+        exercises.forEach(ex=>{
+          const alreadyAdded=wm.customExercises.includes(ex);
+          const row=document.createElement('div');
+          row.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border-bottom:1px solid var(--border);cursor:pointer';
+          if(alreadyAdded)row.style.background='rgba(22,163,74,.06)';
+
+          const nm=document.createElement('span');nm.style.cssText='font-size:13px;color:var(--text)';
+          nm.textContent=ex;row.appendChild(nm);
+
+          const addBtn=document.createElement('button');
+          addBtn.style.cssText=`border:none;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;background:${alreadyAdded?'var(--green-light)':'var(--accent-light)'};color:${alreadyAdded?'var(--green)':'var(--accent)'}`;
+          addBtn.textContent=alreadyAdded?'✓':'+ Добавить';
+          addBtn.onclick=e=>{
+            e.stopPropagation();
+            if(!alreadyAdded){wm.customExercises.push(ex);}
+            else{wm.customExercises=wm.customExercises.filter(x=>x!==ex);}
+            rebuild();
+          };
+          row.appendChild(addBtn);
+          row.onclick=()=>{
+            if(!alreadyAdded)wm.customExercises.push(ex);
+            else wm.customExercises=wm.customExercises.filter(x=>x!==ex);
+            rebuild();
+          };
+          exListContainer.appendChild(row);
+        });
+      }
+      updateExList();
+    }
+
+    // ── Save button ──
+    const saveBtn=document.createElement('button');
+    saveBtn.className='modal-save';
+    saveBtn.textContent='Сохранить';
+    saveBtn.onclick=()=>{
+      const te=S.te;
+      const isCustom=wm.mode==='custom';
+      const workoutData={
+        ...f,
+        customMode: wm.mode,
+        customExercises: isCustom ? wm.customExercises : [],
+        exercises: wm.editing ? (wm.editing.exercises||{}) : {},
+        // For custom: use name or generated title, for plan: use type
+        type: isCustom ? (f.name||'Своя тренировка') : f.type,
+      };
+      if(wm.editing) te.workouts=te.workouts.map(w=>w.id===wm.editing.id?{...w,...workoutData}:w);
+      else te.workouts.push({id:Date.now(),...workoutData});
+      save();S.workoutModal=null;overlay.remove();render();
+    };
+    box.appendChild(saveBtn);
+  }
+
+  rebuild();
+}
+
+// Keep rWorkoutModal as alias (called by render if modal open via old path)
+function rWorkoutModal(){return null;}
+// ══════════════════════════════════════════════
+// AI АНАЛИЗ ДНЯ
+// ══════════════════════════════════════════════
+function openAIAnalysis(){
+  const existing=document.getElementById('ai-analysis-overlay');
+  if(existing)existing.remove();
+
+  const te=S.te, p=S.data.profile;
+  const tw=S.weights.find(x=>x.date===ad());
+
+  const overlay=document.createElement('div');
+  overlay.id='ai-analysis-overlay';
+  overlay.className='modal-overlay';
+  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
+
+  const box=document.createElement('div');
+  box.className='modal-box';
+  box.addEventListener('click',e=>e.stopPropagation());
+
+  // Header
+  const hdr=document.createElement('div');hdr.className='modal-hdr';
+  const title=document.createElement('div');title.className='modal-title';
+  title.textContent='🤖 AI Анализ дня';
+  const closeBtn=document.createElement('button');closeBtn.className='modal-close';closeBtn.textContent='×';
+  closeBtn.onclick=()=>overlay.remove();
+  hdr.appendChild(title);hdr.appendChild(closeBtn);box.appendChild(hdr);
+
+  // Loading state
+  const body=document.createElement('div');
+  body.style.cssText='min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px 0';
+  const spinner=document.createElement('div');
+  spinner.style.cssText='width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite';
+  const spinStyle=document.createElement('style');
+  spinStyle.textContent='@keyframes spin{to{transform:rotate(360deg)}}';
+  document.head.appendChild(spinStyle);
+  const loadTxt=document.createElement('div');
+  loadTxt.style.cssText='font-size:14px;color:var(--sub);text-align:center';
+  loadTxt.textContent='Анализирую твой день...';
+  body.appendChild(spinner);body.appendChild(loadTxt);
+  box.appendChild(body);
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+
+  // Build prompt
+  const foodList=te.foods.length
+    ? te.foods.map(f=>`- ${f.name} ${f.weight}г (${f.calories}ккал, Б${f.protein}г, Ж${f.fat||0}г, У${f.carbs||0}г)`).join('\n')
+    : 'Питание не записано';
+
+  const workoutList=te.workouts.length
+    ? te.workouts.map(w=>{
+        const exList=w.customMode==='custom'?(w.customExercises||[]):(WT[w.type]||[]);
+        const sets=Object.entries(w.exercises||{}).map(([ex,sets])=>
+          ex+': '+sets.map(s=>s.weight?(s.weight+'кг×'+s.reps+'повт'):(s.reps+'повт')).join(', ')
+        ).join('; ');
+        return `- ${w.type} ${w.duration}мин пульс ${w.pulse||'—'}${exList.length?' ('+exList.slice(0,4).join(', ')+(exList.length>4?'...':'')+')':''}${sets?' ['+sets+']':''}`;
+      }).join('\n')
+    : 'Тренировки не записаны';
+
+  const prompt=`Ты персональный тренер и диетолог. Проанализируй день пользователя и дай конкретные, полезные комментарии на русском языке.
+
+ПРОФИЛЬ:
+- Вес: ${tw?tw.kg+' кг':'не указан'} (цель: рекомпозиция тела)
+- Рост: 175 см
+- Цели: калории ${p.calorieGoal}ккал, белок ${p.proteinGoal}г, жиры ${p.fatGoal||70}г, углеводы ${p.carbGoal||200}г
+- Здоровье: искусственный аортальный клапан, коксартроз тазобедренных суставов
+
+ПИТАНИЕ ЗА ДЕНЬ:
+${foodList}
+Итого: ${te.totalCalories}ккал | Б:${te.totalProtein}г | Ж:${te.totalFat||0}г | У:${te.totalCarbs||0}г
+
+ТРЕНИРОВКИ:
+${workoutList}
+
+Дай анализ в формате:
+📊 ПИТАНИЕ — что хорошо, что улучшить, хватает ли белка, баланс макросов
+💪 ТРЕНИРОВКА — оценка нагрузки, пульс, подходы
+⚠️ РЕКОМЕНДАЦИИ — 2-3 конкретных совета на завтра
+👍 МОЛОДЕЦ — что сделал правильно сегодня
+
+Пиши коротко и конкретно, без воды. Учитывай проблемы со здоровьем (сердце, суставы).`;
+
+  aiCall([{role:'user',content:prompt}], 800)
+  .then(text=>{
+    if(!text){throw new Error('empty');}
+
+    body.innerHTML='';
+    body.style.cssText='padding:4px 0';
+
+    // Format response — split by emoji sections
+    const sections=text.split(/(?=📊|💪|⚠️|👍)/g).filter(s=>s.trim());
+    sections.forEach(section=>{
+      const card=document.createElement('div');
+      card.style.cssText='background:var(--bg);border-radius:10px;padding:12px 14px;margin-bottom:10px;border-left:3px solid var(--accent)';
+      if(section.startsWith('📊'))card.style.borderColor='var(--orange)';
+      else if(section.startsWith('💪'))card.style.borderColor='var(--green)';
+      else if(section.startsWith('⚠️'))card.style.borderColor='var(--yellow)';
+      else if(section.startsWith('👍'))card.style.borderColor='var(--teal)';
+      const lines=section.trim().split('\n');
+      const titleLine=document.createElement('div');
+      titleLine.style.cssText='font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px';
+      titleLine.textContent=lines[0];
+      card.appendChild(titleLine);
+      if(lines.length>1){
+        const rest=document.createElement('div');
+        rest.style.cssText='font-size:13px;color:var(--sub);line-height:1.6;white-space:pre-wrap';
+        rest.textContent=lines.slice(1).join('\n').trim();
+        card.appendChild(rest);
+      }
+      body.appendChild(card);
+    });
+    if(!sections.length){
+      const raw=document.createElement('div');
+      raw.style.cssText='font-size:13px;color:var(--text);line-height:1.7;white-space:pre-wrap;padding:8px 0';
+      raw.textContent=text;body.appendChild(raw);
+    }
+    const closeBottom=document.createElement('button');
+    closeBottom.className='modal-save';closeBottom.textContent='Закрыть';
+    closeBottom.style.background='var(--header)';
+    closeBottom.onclick=()=>overlay.remove();
+    body.appendChild(closeBottom);
+  })
+  .catch(err=>{
+    body.innerHTML='';body.style.cssText='padding:20px;text-align:center';
+    const isNoKey=err.message==='NO_KEY';
+    const errIcon=document.createElement('div');errIcon.style.fontSize='36px';errIcon.textContent=isNoKey?'🔑':'😔';
+    const errMsg=document.createElement('div');
+    errMsg.style.cssText='font-size:14px;color:var(--red);margin-top:10px;margin-bottom:8px;font-weight:600';
+    errMsg.textContent=isNoKey?'Введи DeepSeek API ключ':'Не удалось получить анализ';
+    const errHint=document.createElement('div');
+    errHint.style.cssText='font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:12px';
+    errHint.textContent=isNoKey
+      ?'Зарегистрируйся на platform.deepseek.com → API Keys → Create key. Стоимость: $0.001 за запрос (почти бесплатно). При регистрации дают $5 кредитов.'
+      :'Проверь правильность ключа или интернет-соединение.';
+    const settingsBtn=document.createElement('button');
+    settingsBtn.className='modal-save';settingsBtn.style.marginBottom='8px';
+    settingsBtn.textContent='⚙️ Ввести API ключ';
+    settingsBtn.onclick=()=>{overlay.remove();openAISettings();};
+    const closeB=document.createElement('button');
+    closeB.style.cssText='width:100%;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:11px;color:var(--text);font-size:14px;cursor:pointer;font-family:inherit';
+    closeB.textContent='Закрыть';closeB.onclick=()=>overlay.remove();
+    body.appendChild(errIcon);body.appendChild(errMsg);body.appendChild(errHint);body.appendChild(settingsBtn);body.appendChild(closeB);
+  });
+}
+
+// ══════════════════════════════════════════════
+// 💊 ВКЛАДКА ДОБАВКИ
+// ══════════════════════════════════════════════
+function rSupps(){
+  const frag=document.createDocumentFragment();
+  const td=today();
+
+  // ── Мои добавки (активные) ──
+  const activeSupps=S.mySupps.filter(s=>s.active!==false);
+
+  if(activeSupps.length>0){
+    const hdr=document.createElement('div');hdr.className='section-header';
+    const t=document.createElement('div');t.className='section-title';t.textContent='✅ Мои добавки';
+    hdr.appendChild(t);frag.appendChild(hdr);
+
+    activeSupps.forEach(supp=>{
+      const takenToday=supp.taken&&supp.taken[td];
+      const card=document.createElement('div');
+      card.style.cssText=`background:${takenToday?'var(--green-light)':'var(--card)'};border:1.5px solid ${takenToday?'#bbf7d0':'var(--border)'};border-radius:12px;padding:12px 14px;margin-bottom:8px;box-shadow:var(--shadow)`;
+
+      const row=document.createElement('div');row.style.cssText='display:flex;align-items:center;gap:10px';
+
+      // Check button
+      const checkBtn=document.createElement('button');
+      checkBtn.style.cssText=`width:36px;height:36px;border-radius:50%;border:2px solid ${takenToday?'var(--green)':'var(--border)'};background:${takenToday?'var(--green)':'transparent'};color:#fff;font-size:18px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center`;
+      checkBtn.textContent=takenToday?'✓':'';
+      checkBtn.onclick=()=>{
+        if(!supp.taken)supp.taken={};
+        supp.taken[td]=!takenToday;
+        saveSupps();render();
+      };
+
+      const info=document.createElement('div');info.style.flex='1';
+      const name=document.createElement('div');name.style.cssText='font-size:14px;font-weight:600;color:var(--text)';name.textContent=supp.name;
+      const dose=document.createElement('div');dose.style.cssText='font-size:12px;color:var(--sub);margin-top:2px';
+      dose.textContent=(supp.dose||'')+(supp.times&&supp.times.length?' · '+supp.times.join(', '):'');
+      info.appendChild(name);info.appendChild(dose);
+
+      const acts=document.createElement('div');acts.style.cssText='display:flex;gap:5px';
+      const editBtn=document.createElement('button');editBtn.className='icon-btn';editBtn.style.cssText='background:var(--accent-light);color:var(--accent)';editBtn.textContent='✏️';
+      editBtn.onclick=()=>openSuppModal(supp);
+      const delBtn=document.createElement('button');delBtn.className='icon-btn';delBtn.style.cssText='background:var(--red-light);color:var(--red)';delBtn.textContent='×';
+      delBtn.onclick=()=>{S.mySupps=S.mySupps.filter(x=>x.id!==supp.id);saveSupps();render();};
+
+      acts.appendChild(editBtn);acts.appendChild(delBtn);
+      row.appendChild(checkBtn);row.appendChild(info);row.appendChild(acts);
+      card.appendChild(row);
+      if(supp.notes){const nt=document.createElement('div');nt.style.cssText='font-size:11px;color:var(--muted);margin-top:6px;font-style:italic;padding-left:46px';nt.textContent=supp.notes;card.appendChild(nt);}
+      frag.appendChild(card);
+    });
+
+    // Progress bar for today
+    const taken=activeSupps.filter(s=>s.taken&&s.taken[td]).length;
+    const pct=Math.round(taken/activeSupps.length*100);
+    const prog=document.createElement('div');
+    prog.style.cssText='background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:16px;box-shadow:var(--shadow)';
+    prog.innerHTML=`<div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:13px;font-weight:600">Принято сегодня</span><span style="font-size:13px;font-weight:700;color:var(--green)">${taken}/${activeSupps.length}</span></div><div style="background:var(--bg);border-radius:5px;height:8px;overflow:hidden"><div style="width:${pct}%;height:100%;background:var(--green);border-radius:5px;transition:width .5s"></div></div>`;
+    frag.insertBefore(prog,frag.firstChild);
+  }
+
+  // ── Add button ──
+  const addHdr=document.createElement('div');addHdr.className='section-header';
+  const at=document.createElement('div');at.className='section-title';at.textContent='Добавить добавку';
+  const addBtn2=document.createElement('button');addBtn2.className='add-btn';addBtn2.textContent='+ Добавить';
+  addBtn2.onclick=()=>openSuppModal(null);
+  addHdr.appendChild(at);addHdr.appendChild(addBtn2);frag.appendChild(addHdr);
+
+  // ── Search in DB ──
+  const searchWrap=document.createElement('div');searchWrap.className='field';
+  const searchLbl=document.createElement('div');searchLbl.className='field-lbl';searchLbl.textContent='ПОИСК В БАЗЕ ДОБАВОК';
+  const searchInp=document.createElement('input');searchInp.className='field-inp';searchInp.placeholder='Витамин D, Магний, Омега...';
+  searchInp.oninput=e=>{
+    const q=e.target.value.toLowerCase();
+    listContainer.innerHTML='';
+    const results=q.length>1?SUPP_DB.filter(([n])=>n.toLowerCase().includes(q)):[];
+    renderSuppList(results,listContainer);
+  };
+  searchWrap.appendChild(searchLbl);searchWrap.appendChild(searchInp);frag.appendChild(searchWrap);
+
+  // Category filter
+  const catWrap=document.createElement('div');catWrap.style.cssText='display:flex;gap:6px;overflow-x:auto;margin-bottom:10px';
+  const listContainer=document.createElement('div');
+
+  let activeCat=SUPP_CATS[0];
+  function renderCats(){
+    catWrap.innerHTML='';
+    SUPP_CATS.forEach(cat=>{
+      const btn=document.createElement('button');
+      const isA=cat===activeCat;
+      btn.style.cssText=`flex-shrink:0;padding:5px 10px;border-radius:14px;border:1.5px solid ${isA?'var(--accent)':'var(--border)'};background:${isA?'var(--accent)':'var(--bg)'};color:${isA?'#fff':'var(--sub)'};font-size:11px;font-weight:${isA?'700':'400'};cursor:pointer;font-family:inherit;white-space:nowrap`;
+      btn.textContent=cat;
+      btn.onclick=()=>{activeCat=cat;searchInp.value='';renderCats();renderSuppList(SUPP_DB.filter(s=>s[1]===cat),listContainer);};
+      catWrap.appendChild(btn);
+    });
+  }
+  renderCats();
+  renderSuppList(SUPP_DB.filter(s=>s[1]===activeCat),listContainer);
+  frag.appendChild(catWrap);frag.appendChild(listContainer);
+
+  function renderSuppList(items,container){
+    container.innerHTML='';
+    if(!items.length){const e=document.createElement('div');e.style.cssText='text-align:center;padding:16px;color:var(--muted);font-size:13px';e.textContent='Ничего не найдено';container.appendChild(e);return;}
+    items.forEach(([name,cat,desc,dose])=>{
+      const already=S.mySupps.some(s=>s.name===name);
+      const row=document.createElement('div');
+      row.style.cssText=`background:var(--card);border:1px solid var(--border);border-radius:10px;padding:11px 13px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;box-shadow:var(--shadow)`;
+      const left=document.createElement('div');left.style.flex='1';
+      const nm=document.createElement('div');nm.style.cssText='font-size:13px;font-weight:600;color:var(--text)';nm.textContent=name;
+      const ds=document.createElement('div');ds.style.cssText='font-size:11px;color:var(--sub);margin-top:2px';ds.textContent=desc+' · '+dose;
+      left.appendChild(nm);left.appendChild(ds);
+      const btn=document.createElement('button');
+      btn.style.cssText=`border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;flex-shrink:0;background:${already?'var(--green-light)':'var(--accent-light)'};color:${already?'var(--green)':'var(--accent)'}`;
+      btn.textContent=already?'✓ В списке':'+ Добавить';
+      btn.onclick=()=>{
+        if(!already){S.mySupps.push({id:Date.now(),name,dose,times:['Утром с едой'],notes:'',taken:{},active:true});saveSupps();render();}
+        else openSuppModal(S.mySupps.find(s=>s.name===name));
+      };
+      row.appendChild(left);row.appendChild(btn);container.appendChild(row);
+    });
+  }
+
+  return frag;
+}
+
+function openSuppModal(supp){
+  const existing=document.getElementById('supp-modal-overlay');if(existing)existing.remove();
+  const isNew=!supp;
+  const data=supp?{...supp,times:[...(supp.times||[])]}:{name:'',dose:'',times:['Утром с едой'],notes:''};
+
+  const overlay=document.createElement('div');overlay.id='supp-modal-overlay';overlay.className='modal-overlay';
+  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
+  const box=document.createElement('div');box.className='modal-box';box.addEventListener('click',e=>e.stopPropagation());
+
+  const hdr=document.createElement('div');hdr.className='modal-hdr';
+  hdr.appendChild(Object.assign(document.createElement('div'),{className:'modal-title',textContent:isNew?'💊 Добавить добавку':'✏️ Редактировать'}));
+  const cl=document.createElement('button');cl.className='modal-close';cl.textContent='×';cl.onclick=()=>overlay.remove();hdr.appendChild(cl);box.appendChild(hdr);
+
+  // Name
+  const ni=document.createElement('input');ni.className='field-inp';ni.placeholder='Название добавки';ni.value=data.name;ni.oninput=e=>data.name=e.target.value;
+  const nf=document.createElement('div');nf.className='field';nf.appendChild(Object.assign(document.createElement('div'),{className:'field-lbl',textContent:'НАЗВАНИЕ'}));nf.appendChild(ni);box.appendChild(nf);
+
+  // Dose
+  const di=document.createElement('input');di.className='field-inp';di.placeholder='Например: 400 мг';di.value=data.dose;di.oninput=e=>data.dose=e.target.value;
+  const df=document.createElement('div');df.className='field';df.appendChild(Object.assign(document.createElement('div'),{className:'field-lbl',textContent:'ДОЗИРОВКА'}));df.appendChild(di);box.appendChild(df);
+
+  // Times
+  const tf=document.createElement('div');tf.className='field';
+  tf.appendChild(Object.assign(document.createElement('div'),{className:'field-lbl',textContent:'ВРЕМЯ ПРИЁМА'}));
+  const tgrid=document.createElement('div');tgrid.style.cssText='display:flex;flex-wrap:wrap;gap:6px';
+  SUPP_TIMES.forEach(t=>{
+    const btn=document.createElement('button');
+    const isA=data.times.includes(t);
+    btn.style.cssText=`padding:6px 10px;border-radius:16px;border:1.5px solid ${isA?'var(--accent)':'var(--border)'};background:${isA?'var(--accent-light)':'var(--bg)'};color:${isA?'var(--accent)':'var(--sub)'};font-size:11px;font-weight:${isA?'700':'400'};cursor:pointer;font-family:inherit`;
+    btn.textContent=t;
+    btn.onclick=()=>{
+      if(data.times.includes(t))data.times=data.times.filter(x=>x!==t);else data.times.push(t);
+      tgrid.querySelectorAll('button').forEach((b,i)=>{
+        const time=SUPP_TIMES[i];const act=data.times.includes(time);
+        b.style.borderColor=act?'var(--accent)':'var(--border)';b.style.background=act?'var(--accent-light)':'var(--bg)';b.style.color=act?'var(--accent)':'var(--sub)';b.style.fontWeight=act?'700':'400';
+      });
+    };
+    tgrid.appendChild(btn);
+  });
+  tf.appendChild(tgrid);box.appendChild(tf);
+
+  // Notes
+  const nti=document.createElement('input');nti.className='field-inp';nti.placeholder='Заметки (необязательно)';nti.value=data.notes||'';nti.oninput=e=>data.notes=e.target.value;
+  const ntf=document.createElement('div');ntf.className='field';ntf.appendChild(Object.assign(document.createElement('div'),{className:'field-lbl',textContent:'ЗАМЕТКИ'}));ntf.appendChild(nti);box.appendChild(ntf);
+
+  // Save
+  const saveBtn=document.createElement('button');saveBtn.className='modal-save';saveBtn.textContent='Сохранить';
+  saveBtn.onclick=()=>{
+    if(!data.name.trim())return;
+    if(isNew){S.mySupps.push({id:Date.now(),...data,taken:{},active:true});}
+    else{const idx=S.mySupps.findIndex(s=>s.id===supp.id);if(idx>=0)S.mySupps[idx]={...S.mySupps[idx],...data};}
+    saveSupps();overlay.remove();render();
+  };
+  box.appendChild(saveBtn);
+  overlay.appendChild(box);document.body.appendChild(overlay);
+}
+
+// ══════════════════════════════════════════════
+// 🩺 ВКЛАДКА АНАЛИЗЫ
+// ══════════════════════════════════════════════
+function rAnalyses(){
+  const frag=document.createDocumentFragment();
+
+  const hdr=document.createElement('div');hdr.className='section-header';
+  hdr.appendChild(Object.assign(document.createElement('div'),{className:'section-title',textContent:'🩺 Медицинские анализы'}));
+  const addBtn=document.createElement('button');addBtn.className='add-btn';addBtn.textContent='+ Добавить';
+  addBtn.onclick=()=>openAnalysisModal();hdr.appendChild(addBtn);frag.appendChild(hdr);
+
+  const hint=document.createElement('div');
+  hint.style.cssText='background:var(--accent-light);border:1px solid #bfdbfe;border-radius:10px;padding:10px 13px;margin-bottom:14px;font-size:12px;color:var(--accent);line-height:1.5';
+  hint.textContent='📷 Сфотографируй бланк анализов — AI прочитает показатели и даст комментарий с учётом твоих диагнозов и лекарств';
+  frag.appendChild(hint);
+
+  if(!S.analyses.length){
+    const empty=document.createElement('div');empty.className='empty';
+    empty.innerHTML='<div style="font-size:36px;margin-bottom:10px">🔬</div><div>Анализов пока нет</div><div style="font-size:12px;color:var(--muted);margin-top:6px">Добавь первый анализ чтобы отслеживать динамику</div>';
+    frag.appendChild(empty);return frag;
+  }
+
+  S.analyses.slice().reverse().forEach(an=>{
+    const card=document.createElement('div');
+    card.style.cssText='background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px 14px;margin-bottom:10px;box-shadow:var(--shadow)';
+
+    const row=document.createElement('div');row.style.cssText='display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px';
+    const left=document.createElement('div');
+    const title=document.createElement('div');title.style.cssText='font-size:14px;font-weight:700;color:var(--text)';title.textContent=an.title||'Анализы';
+    const date=document.createElement('div');date.style.cssText='font-size:11px;color:var(--muted);margin-top:2px';date.textContent=fmtShort(an.date);
+    left.appendChild(title);left.appendChild(date);
+    const acts=document.createElement('div');acts.style.cssText='display:flex;gap:5px';
+    const delBtn=document.createElement('button');delBtn.className='icon-btn';delBtn.style.cssText='background:var(--red-light);color:var(--red)';delBtn.textContent='×';
+    delBtn.onclick=()=>{S.analyses=S.analyses.filter(x=>x.id!==an.id);saveAnalyses();render();};
+    acts.appendChild(delBtn);row.appendChild(left);row.appendChild(acts);card.appendChild(row);
+
+    // Raw text preview
+    if(an.text){
+      const txt=document.createElement('div');txt.style.cssText='font-size:12px;color:var(--sub);background:var(--bg);border-radius:8px;padding:8px 10px;margin-bottom:8px;max-height:80px;overflow:hidden;white-space:pre-wrap';
+      txt.textContent=an.text.substring(0,300)+(an.text.length>300?'...':'');card.appendChild(txt);
+    }
+
+    // AI comment
+    if(an.aiComment){
+      const aiBox=document.createElement('div');aiBox.style.cssText='background:var(--accent-light);border-radius:8px;padding:9px 11px;border-left:3px solid var(--accent)';
+      const aiTitle=document.createElement('div');aiTitle.style.cssText='font-size:11px;font-weight:700;color:var(--accent);margin-bottom:4px';aiTitle.textContent='🤖 AI Комментарий:';
+      const aiText=document.createElement('div');aiText.style.cssText='font-size:12px;color:var(--text);line-height:1.5;white-space:pre-wrap';aiText.textContent=an.aiComment;
+      aiBox.appendChild(aiTitle);aiBox.appendChild(aiText);card.appendChild(aiBox);
+    } else {
+      const aiBtn=document.createElement('button');
+      aiBtn.style.cssText='width:100%;padding:8px;background:var(--purple-light);border:1px solid #ddd6fe;border-radius:8px;color:var(--purple);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:4px';
+      aiBtn.textContent='🤖 Запросить AI анализ';
+      aiBtn.onclick=()=>requestAnalysisAI(an);card.appendChild(aiBtn);
+    }
+    frag.appendChild(card);
+  });
+  return frag;
+}
+
+function openAnalysisModal(){
+  const existing=document.getElementById('analysis-modal-overlay');if(existing)existing.remove();
+  const data={title:'',date:today(),text:'',scanning:false,scanErr:''};
+
+  const overlay=document.createElement('div');overlay.id='analysis-modal-overlay';overlay.className='modal-overlay';
+  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
+  const box=document.createElement('div');box.className='modal-box';box.addEventListener('click',e=>e.stopPropagation());
+
+  const hdr=document.createElement('div');hdr.className='modal-hdr';
+  hdr.appendChild(Object.assign(document.createElement('div'),{className:'modal-title',textContent:'🩺 Добавить анализы'}));
+  const cl=document.createElement('button');cl.className='modal-close';cl.textContent='×';cl.onclick=()=>overlay.remove();hdr.appendChild(cl);box.appendChild(hdr);
+
+  // Title
+  const ti=document.createElement('input');ti.className='field-inp';ti.placeholder='Например: ОАК, Биохимия, МНО';ti.value=data.title;ti.oninput=e=>data.title=e.target.value;
+  const tf=document.createElement('div');tf.className='field';tf.appendChild(Object.assign(document.createElement('div'),{className:'field-lbl',textContent:'НАЗВАНИЕ'}));tf.appendChild(ti);box.appendChild(tf);
+
+  // Date
+  const di=document.createElement('input');di.className='field-inp';di.type='date';di.value=data.date;di.max=today();di.oninput=e=>data.date=e.target.value;
+  const df=document.createElement('div');df.className='field';df.appendChild(Object.assign(document.createElement('div'),{className:'field-lbl',textContent:'ДАТА АНАЛИЗОВ'}));df.appendChild(di);box.appendChild(df);
+
+  // Photo + text area
+  const pf=document.createElement('div');pf.className='field';
+  pf.appendChild(Object.assign(document.createElement('div'),{className:'field-lbl',textContent:'ДАННЫЕ АНАЛИЗОВ'}));
+
+  const camRow=document.createElement('div');camRow.style.cssText='display:flex;gap:8px;margin-bottom:8px';
+  const camInp=document.createElement('input');camInp.type='file';camInp.accept='image/*';camInp.style.display='none';
+  const statusDiv=document.createElement('div');statusDiv.style.cssText='font-size:11px;color:var(--sub);margin-top:4px';statusDiv.textContent='Сфотографируй бланк или введи вручную';
+
+  camInp.onchange=async e=>{
+    const file=e.target.files?.[0];if(!file)return;e.target.value='';
+    statusDiv.style.color='var(--purple)';statusDiv.textContent='🔍 Читаю анализы...';camBtn.disabled=true;camBtn.textContent='⏳';
+    const reader=new FileReader();
+    reader.onload=async()=>{
+      try{
+        const b64=reader.result.split(',')[1];
+        const txt=await aiCall([{role:'user',content:[
+          {type:'image_url',image_url:{url:'data:image/jpeg;base64,'+b64}},
+          {type:'text',text:'Прочитай медицинский анализ на фото. Выпиши все показатели с их значениями и единицами измерения. Формат: "Показатель: значение единица (норма: диапазон)". Одна строка — один показатель.'}
+        ]}], 800);
+        if(txt){textarea.value=txt;data.text=txt;statusDiv.style.color='var(--green)';statusDiv.textContent='✅ Показатели прочитаны — проверь и исправь если нужно';}
+        else throw new Error();
+      }catch{statusDiv.style.color='var(--red)';statusDiv.textContent='Не удалось прочитать — введи вручную';}
+      camBtn.disabled=false;camBtn.textContent='📷 Фото';
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const camBtn=document.createElement('button');
+  camBtn.style.cssText='background:var(--purple);border:none;border-radius:9px;padding:10px 14px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap';
+  camBtn.textContent='📷 Фото';camBtn.onclick=()=>camInp.click();
+  camRow.appendChild(camBtn);camRow.appendChild(camInp);pf.appendChild(camRow);
+
+  const textarea=document.createElement('textarea');
+  textarea.className='field-inp';textarea.placeholder='Гемоглобин: 145 г/л (норма: 130–160)\nЛейкоциты: 6.5 тыс/мкл\nМНО: 2.3\n...';
+  textarea.style.cssText='height:120px;resize:vertical;font-size:13px;line-height:1.5';
+  textarea.oninput=e=>data.text=e.target.value;
+  pf.appendChild(textarea);pf.appendChild(statusDiv);box.appendChild(pf);
+
+  const saveBtn=document.createElement('button');saveBtn.className='modal-save';saveBtn.textContent='Сохранить';
+  saveBtn.onclick=()=>{
+    if(!data.text.trim()&&!data.title.trim())return;
+    S.analyses.push({id:Date.now(),date:data.date,title:data.title||'Анализы',text:data.text,aiComment:''});
+    saveAnalyses();overlay.remove();render();
+    // Auto-request AI comment
+    setTimeout(()=>requestAnalysisAI(S.analyses[S.analyses.length-1]),300);
+  };
+  box.appendChild(saveBtn);
+  overlay.appendChild(box);document.body.appendChild(overlay);
+}
+
+async function requestAnalysisAI(an){
+  // Show loading on card
+  render();
+  try{
+    const prompt=`Ты врач-терапевт. Проанализируй медицинские анализы пациента и дай подробный комментарий на русском языке.
+
+ПРОФИЛЬ ПАЦИЕНТА:
+- Мужчина, 175 см
+- Диагнозы: искусственный аортальный клапан, коксартроз тазобедренных суставов (левый 3 степень, правый 2 степень)
+- Принимает: Варфарин (контроль МНО), Престанс, Абикор, Конкор 5мг
+- Принимает добавки: ${S.mySupps.map(s=>s.name).join(', ')||'не указаны'}
+
+АНАЛИЗЫ (${an.title}, ${fmtDate(an.date)}):
+${an.text}
+
+Дай анализ по структуре:
+✅ В НОРМЕ — что хорошо
+⚠️ ОБРАТИТЬ ВНИМАНИЕ — отклонения и их значение  
+💊 ВЛИЯНИЕ ЛЕКАРСТВ — как лекарства влияют на показатели
+🔄 ДИНАМИКА — на что смотреть в следующий раз
+👨‍⚕️ РЕКОМЕНДАЦИИ — что обсудить с врачом
+
+Пиши конкретно, учитывай его диагнозы и лекарства. Особое внимание — МНО (целевой диапазон 2.5–3.5 при механическом клапане).`;
+
+    const txt=await aiCall([{role:'user',content:prompt}], 900);
+    if(txt){
+      const idx=S.analyses.findIndex(x=>x.id===an.id);
+      if(idx>=0){S.analyses[idx].aiComment=txt;saveAnalyses();render();}
+    }
+  }catch(e){console.error(e);}
+}
+
+// ══════════════════════════════════════════════
+// ОНБОРДИНГ — ОПРОС ПРИ ПЕРВОМ ВХОДЕ
+// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════
+// ЭКРАН АВТОРИЗАЦИИ
+// ══════════════════════════════════════════════
+function renderAuth(){
+  const wrap=document.createElement('div');
+  wrap.style.cssText='min-height:100vh;background:linear-gradient(160deg,#1a2a4a 0%,#2563eb 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px';
+
+  // Состояние формы
+  const state={mode:'login',email:'',password:'',name:'',loading:false,error:'',success:''};
+
+  function rebuild(){
+    wrap.innerHTML='';
+
+    // Лого
+    const logo=document.createElement('div');
+    logo.style.cssText='text-align:center;margin-bottom:32px';
+    logo.innerHTML='<div style="font-size:60px;margin-bottom:12px">💪</div><div style="font-size:28px;font-weight:800;color:#fff;margin-bottom:6px">Фитнес Дневник</div><div style="font-size:14px;color:rgba(255,255,255,.6)">Персональный AI тренер</div>';
+    wrap.appendChild(logo);
+
+    // Карточка формы
+    const card=document.createElement('div');
+    card.style.cssText='background:#fff;border-radius:20px;padding:24px;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,.3)';
+
+    // Переключатель Вход/Регистрация
+    const tabs=document.createElement('div');
+    tabs.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:4px;background:#f0f4f8;border-radius:10px;padding:4px;margin-bottom:20px';
+    ['login','signup'].forEach(mode=>{
+      const btn=document.createElement('button');
+      const isA=state.mode===mode;
+      btn.style.cssText=`padding:10px;border-radius:8px;border:none;font-size:14px;font-weight:${isA?'700':'400'};cursor:pointer;font-family:inherit;background:${isA?'#fff':'transparent'};color:${isA?'#2563eb':'#5a6a80'};box-shadow:${isA?'0 2px 8px rgba(0,0,0,.1)':'none'};transition:all .2s`;
+      btn.textContent=mode==='login'?'Войти':'Регистрация';
+      btn.onclick=()=>{state.mode=mode;state.error='';state.success='';rebuild();};
+      tabs.appendChild(btn);
+    });
+    card.appendChild(tabs);
+
+    // Ошибка
+    if(state.error){
+      const err=document.createElement('div');
+      err.style.cssText='background:#fff1f1;border:1px solid #fecaca;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:13px;color:#dc2626;line-height:1.4';
+      err.textContent=state.error;card.appendChild(err);
+    }
+
+    // Успех
+    if(state.success){
+      const ok=document.createElement('div');
+      ok.style.cssText='background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:13px;color:#16a34a;line-height:1.4';
+      ok.textContent=state.success;card.appendChild(ok);
+    }
+
+    // Поле Имя (только регистрация)
+    if(state.mode==='signup'){
+      const nf=document.createElement('div');nf.style.marginBottom='12px';
+      const nl=document.createElement('div');nl.style.cssText='font-size:11px;color:#5a6a80;font-weight:700;margin-bottom:4px;letter-spacing:.5px';nl.textContent='ИМЯ';
+      const ni=document.createElement('input');ni.type='text';ni.placeholder='Как тебя зовут?';ni.value=state.name;
+      ni.style.cssText='width:100%;background:#f0f4f8;border:1.5px solid #dde3ea;border-radius:9px;padding:12px;font-size:15px;font-family:inherit;outline:none;color:#1e2d42';
+      ni.oninput=e=>state.name=e.target.value;
+      ni.onfocus=e=>e.target.style.borderColor='#2563eb';
+      ni.onblur=e=>e.target.style.borderColor='#dde3ea';
+      nf.appendChild(nl);nf.appendChild(ni);card.appendChild(nf);
+    }
+
+    // Email
+    const ef=document.createElement('div');ef.style.marginBottom='12px';
+    const el=document.createElement('div');el.style.cssText='font-size:11px;color:#5a6a80;font-weight:700;margin-bottom:4px;letter-spacing:.5px';el.textContent='EMAIL';
+    const ei=document.createElement('input');ei.type='email';ei.placeholder='example@mail.ru';ei.value=state.email;
+    ei.style.cssText='width:100%;background:#f0f4f8;border:1.5px solid #dde3ea;border-radius:9px;padding:12px;font-size:15px;font-family:inherit;outline:none;color:#1e2d42';
+    ei.oninput=e=>state.email=e.target.value;
+    ei.onfocus=e=>e.target.style.borderColor='#2563eb';
+    ei.onblur=e=>e.target.style.borderColor='#dde3ea';
+    ef.appendChild(el);ef.appendChild(ei);card.appendChild(ef);
+
+    // Пароль
+    const pf=document.createElement('div');pf.style.marginBottom='20px';
+    const pl=document.createElement('div');pl.style.cssText='font-size:11px;color:#5a6a80;font-weight:700;margin-bottom:4px;letter-spacing:.5px';pl.textContent='ПАРОЛЬ';
+    const pi=document.createElement('input');pi.type='password';pi.placeholder='Минимум 6 символов';pi.value=state.password;
+    pi.style.cssText='width:100%;background:#f0f4f8;border:1.5px solid #dde3ea;border-radius:9px;padding:12px;font-size:15px;font-family:inherit;outline:none;color:#1e2d42';
+    pi.oninput=e=>state.password=e.target.value;
+    pi.onfocus=e=>e.target.style.borderColor='#2563eb';
+    pi.onblur=e=>e.target.style.borderColor='#dde3ea';
+    // Enter для отправки
+    pi.onkeydown=e=>{if(e.key==='Enter')submitBtn.click();};
+    pf.appendChild(pl);pf.appendChild(pi);card.appendChild(pf);
+
+    // Кнопка submit
+    const submitBtn=document.createElement('button');
+    submitBtn.style.cssText='width:100%;padding:14px;background:#2563eb;border:none;border-radius:12px;color:#fff;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .2s';
+    submitBtn.textContent=state.loading?'⏳ Загрузка...':(state.mode==='login'?'Войти →':'Создать аккаунт →');
+    submitBtn.disabled=state.loading;
+    submitBtn.onclick=async()=>{
+      if(!state.email||!state.password){state.error='Заполни все поля';rebuild();return;}
+      if(state.password.length<6){state.error='Пароль минимум 6 символов';rebuild();return;}
+      state.loading=true;state.error='';rebuild();
+      try{
+        if(state.mode==='login'){
+          const d=await sbSignIn(state.email,state.password);
+          if(d.access_token){
+            localStorage.setItem('sb_session',JSON.stringify(d));
+            currentUser={...d.user,access_token:d.access_token,refresh_token:d.refresh_token,id:d.user.id};
+            // Загружаем данные из облака
+            load();
+            const loaded=await cloudLoad();
+            render();
+          } else {
+            state.error='Неверный email или пароль';
+          }
+        } else {
+          const d=await sbSignUp(state.email,state.password,state.name);
+          if(d.user||d.id){
+            state.success='✅ Аккаунт создан! Проверь email для подтверждения, затем войди.';
+            state.mode='login';
+          } else if(d.error_description||d.msg){
+            state.error=d.error_description||d.msg;
+          } else {
+            state.error='Ошибка регистрации. Попробуй снова.';
+          }
+        }
+      }catch(e){
+        console.error(e);
+        state.error=e.message||'Ошибка соединения. Проверь интернет.';
+      }
+      state.loading=false;rebuild();
+    };
+    card.appendChild(submitBtn);
+
+    // Подсказка
+    const hint=document.createElement('div');
+    hint.style.cssText='text-align:center;margin-top:14px;font-size:12px;color:#8a9ab0';
+    hint.textContent=state.mode==='login'?'Нет аккаунта? Нажми «Регистрация»':'Уже есть аккаунт? Нажми «Войти»';
+    card.appendChild(hint);
+
+    // Разделитель
+    const divider=document.createElement('div');
+    divider.style.cssText='display:flex;align-items:center;gap:10px;margin:16px 0';
+    divider.innerHTML='<div style="flex:1;height:1px;background:#dde3ea"></div><span style="font-size:12px;color:#8a9ab0">или</span><div style="flex:1;height:1px;background:#dde3ea"></div>';
+    card.appendChild(divider);
+
+    // Кнопка гостевого входа
+    const guestBtn=document.createElement('button');
+    guestBtn.style.cssText='width:100%;padding:12px;background:var(--bg,#f0f4f8);border:2px dashed #dde3ea;border-radius:12px;color:#5a6a80;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:10px';
+    guestBtn.textContent='👀 Посмотреть без регистрации';
+    guestBtn.onclick=()=>{
+      setGuest();
+      load();
+      render();
+    };
+    card.appendChild(guestBtn);
+
+    // Предупреждение о госте
+    const guestInfo=document.createElement('div');
+    guestInfo.style.cssText='background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:10px 12px;font-size:12px;color:#92400e;line-height:1.5;text-align:center';
+    guestInfo.innerHTML='⏰ <b>Гостевой доступ 24 часа</b><br>Данные сохраняются только на этом устройстве.<br>Для составления AI плана нужна регистрация.';
+    card.appendChild(guestInfo);
+
+    wrap.appendChild(card);
+
+    // Фокус на email
+    setTimeout(()=>ei.focus(),100);
+  }
+
+  rebuild();
+  return wrap;
+}
+
+function renderOnboarding(){
+  const wrap=document.createElement('div');
+  wrap.style.cssText='min-height:100vh;background:var(--header);display:flex;flex-direction:column';
+
+  // Данные опроса
+  const form={
+    name:'',age:'',weight:'',height:'',gender:'мужской',
+    goal:'',level:'',daysPerWeek:'',sessionTime:'',
+    equipment:'',healthNotes:'',
+    step:0
+  };
+
+  const STEPS=[
+    {id:'welcome'},
+    {id:'personal', title:'Расскажи о себе', fields:['name','age','gender','weight','height']},
+    {id:'goal',     title:'Твоя цель',       fields:['goal']},
+    {id:'level',    title:'Опыт и время',    fields:['level','daysPerWeek','sessionTime']},
+    {id:'equip',    title:'Оборудование',    fields:['equipment']},
+    {id:'health',   title:'Здоровье',        fields:['healthNotes']},
+    {id:'generating'},
+  ];
+
+  function rebuild(){
+    wrap.innerHTML='';
+    // Всегда убираем кнопки навигации при перестройке
+    const oldNav=document.getElementById('onboard-nav');
+    if(oldNav)oldNav.remove();
+
+    const step=STEPS[form.step];
+    if(step.id==='welcome'){
+      renderWelcome(wrap,form,rebuild);
+    } else if(step.id==='generating'){
+      renderGenerating(wrap,form);
+    } else {
+      renderStep(wrap,form,STEPS,rebuild);
+    }
+  }
+  rebuild();
+  return wrap;
+}
+
+function renderWelcome(wrap,form,rebuild){
+  wrap.innerHTML='';
+  wrap.style.cssText='min-height:100vh;background:linear-gradient(160deg,#1a2a4a 0%,#2563eb 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center';
+
+  const logo=document.createElement('div');logo.style.cssText='font-size:72px;margin-bottom:16px';logo.textContent='💪';
+  const title=document.createElement('div');title.style.cssText='font-size:32px;font-weight:800;color:#fff;margin-bottom:10px;line-height:1.1';title.textContent='Фитнес\nДневник';
+  const sub=document.createElement('div');sub.style.cssText='font-size:15px;color:rgba(255,255,255,.7);margin-bottom:40px;line-height:1.6;max-width:300px';
+  sub.textContent='Персональный дневник тренировок и питания с AI-планом специально для тебя';
+
+  const features=[
+    ['📊','Трекинг КБЖУ и макросов'],
+    ['🏋️','Персональный план тренировок'],
+    ['🤖','AI анализ рациона и тренировок'],
+    ['💊','Контроль добавок и анализов'],
+  ];
+  const featureList=document.createElement('div');featureList.style.cssText='width:100%;max-width:300px;margin-bottom:40px';
+  features.forEach(([icon,text])=>{
+    const row=document.createElement('div');row.style.cssText='display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.1)';
+    const ic=document.createElement('div');ic.style.cssText='font-size:22px;flex-shrink:0';ic.textContent=icon;
+    const tx=document.createElement('div');tx.style.cssText='font-size:14px;color:rgba(255,255,255,.85);text-align:left';tx.textContent=text;
+    row.appendChild(ic);row.appendChild(tx);featureList.appendChild(row);
+  });
+
+  const startBtn=document.createElement('button');
+  startBtn.style.cssText='width:100%;max-width:300px;padding:18px;background:#fff;border:none;border-radius:14px;color:#2563eb;font-size:18px;font-weight:800;cursor:pointer;font-family:inherit';
+  startBtn.textContent='Начать →';
+  startBtn.onclick=()=>{form.step=1;rebuild();};
+
+  wrap.appendChild(logo);wrap.appendChild(title);wrap.appendChild(sub);
+  wrap.appendChild(featureList);wrap.appendChild(startBtn);
+}
+
+function renderStep(wrap,form,STEPS,rebuild){
+  wrap.innerHTML='';
+  wrap.style.cssText='min-height:100vh;background:var(--bg);display:flex;flex-direction:column';
+
+  const step=STEPS[form.step];
+  const totalSteps=STEPS.length-2; // exclude welcome and generating
+  const currentStep=form.step;
+
+  // Header
+  const hdr=document.createElement('div');
+  hdr.style.cssText='background:var(--header);padding:52px 20px 20px';
+
+  // Progress bar
+  const progWrap=document.createElement('div');progWrap.style.cssText='background:rgba(255,255,255,.2);border-radius:4px;height:4px;margin-bottom:14px;overflow:hidden';
+  const progFill=document.createElement('div');progFill.style.cssText=`width:${Math.round(currentStep/totalSteps*100)}%;height:100%;background:#60a5fa;border-radius:4px`;
+  progWrap.appendChild(progFill);
+
+  const stepLbl=document.createElement('div');stepLbl.style.cssText='font-size:11px;color:#7a9cc8;margin-bottom:6px';
+  stepLbl.textContent=`ШАГ ${currentStep} из ${totalSteps}`;
+  const stepTitle=document.createElement('div');stepTitle.style.cssText='font-size:22px;font-weight:700;color:#fff';
+  stepTitle.textContent=step.title||'';
+
+  hdr.appendChild(progWrap);hdr.appendChild(stepLbl);hdr.appendChild(stepTitle);
+  wrap.appendChild(hdr);
+
+  // Content
+  const content=document.createElement('div');content.style.cssText='flex:1;padding:20px 20px 100px;overflow-y:auto';
+
+  if(step.id==='personal'){
+    addField(content,'Как тебя зовут?','text','Имя',form,'name');
+    addField(content,'Возраст','number','Лет',form,'age');
+    const genderDiv=document.createElement('div');genderDiv.className='field';
+    genderDiv.appendChild(Object.assign(document.createElement('div'),{className:'field-lbl',textContent:'ПОЛ'}));
+    const gRow=document.createElement('div');gRow.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:8px';
+    ['мужской','женский'].forEach(g=>{
+      const btn=document.createElement('button');
+      const isA=form.gender===g;
+      btn.style.cssText=`padding:12px;border-radius:10px;border:2px solid ${isA?'var(--accent)':'var(--border)'};background:${isA?'var(--accent-light)':'var(--card)'};color:${isA?'var(--accent)':'var(--text)'};font-size:14px;font-weight:${isA?'700':'400'};cursor:pointer;font-family:inherit`;
+      btn.textContent=g==='мужской'?'👨 Мужской':'👩 Женский';
+      btn.onclick=()=>{form.gender=g;rebuild();};
+      gRow.appendChild(btn);
+    });
+    genderDiv.appendChild(gRow);content.appendChild(genderDiv);
+    addField(content,'Текущий вес','number','кг',form,'weight');
+    addField(content,'Рост','number','см',form,'height');
+  }
+
+  else if(step.id==='goal'){
+    const goals=[
+      ['🏋️','Набор мышечной массы','Увеличить мышцы и силу'],
+      ['🔥','Похудение','Снизить вес и жир'],
+      ['⚖️','Рекомпозиция','Одновременно худеть и набирать мышцы'],
+      ['💪','Поддержание формы','Держать текущий вес и тонус'],
+      ['🏃','Выносливость','Улучшить кардио и выносливость'],
+      ['💊','Реабилитация','Восстановление, работа с ограничениями'],
+    ];
+    const goalGrid=document.createElement('div');goalGrid.style.cssText='display:flex;flex-direction:column;gap:10px';
+    goals.forEach(([icon,name,desc])=>{
+      const btn=document.createElement('button');
+      const isA=form.goal===name;
+      btn.style.cssText=`display:flex;align-items:center;gap:12px;padding:14px;border-radius:12px;border:2px solid ${isA?'var(--accent)':'var(--border)'};background:${isA?'var(--accent-light)':'var(--card)'};cursor:pointer;font-family:inherit;text-align:left;width:100%`;
+      const ic=document.createElement('div');ic.style.cssText='font-size:28px;flex-shrink:0';ic.textContent=icon;
+      const info=document.createElement('div');
+      const nm=document.createElement('div');nm.style.cssText=`font-size:14px;font-weight:${isA?'700':'600'};color:${isA?'var(--accent)':'var(--text)'}`;nm.textContent=name;
+      const ds=document.createElement('div');ds.style.cssText='font-size:12px;color:var(--sub);margin-top:2px';ds.textContent=desc;
+      info.appendChild(nm);info.appendChild(ds);btn.appendChild(ic);btn.appendChild(info);
+      btn.onclick=()=>{form.goal=name;rebuild();};
+      goalGrid.appendChild(btn);
+    });
+    content.appendChild(goalGrid);
+  }
+
+  else if(step.id==='level'){
+    const levels=[
+      ['🌱','Новичок','До 6 месяцев опыта'],
+      ['📈','Средний','6 месяцев – 2 года'],
+      ['💪','Продвинутый','Более 2 лет регулярных тренировок'],
+    ];
+    const lDiv=document.createElement('div');lDiv.className='field';
+    lDiv.appendChild(Object.assign(document.createElement('div'),{className:'field-lbl',textContent:'УРОВЕНЬ ПОДГОТОВКИ'}));
+    const lGrid=document.createElement('div');lGrid.style.cssText='display:flex;flex-direction:column;gap:8px';
+    levels.forEach(([icon,name,desc])=>{
+      const btn=document.createElement('button');
+      const isA=form.level===name;
+      btn.style.cssText=`display:flex;align-items:center;gap:10px;padding:12px;border-radius:10px;border:2px solid ${isA?'var(--accent)':'var(--border)'};background:${isA?'var(--accent-light)':'var(--card)'};cursor:pointer;font-family:inherit;text-align:left;width:100%`;
+      btn.innerHTML=`<span style="font-size:22px">${icon}</span><div><div style="font-size:13px;font-weight:${isA?700:600};color:${isA?'var(--accent)':'var(--text)'}">${name}</div><div style="font-size:11px;color:var(--sub)">${desc}</div></div>`;
+      btn.onclick=()=>{form.level=name;rebuild();};
+      lGrid.appendChild(btn);
+    });
+    lDiv.appendChild(lGrid);content.appendChild(lDiv);
+
+    // Days per week
+    const dDiv=document.createElement('div');dDiv.className='field';
+    dDiv.appendChild(Object.assign(document.createElement('div'),{className:'field-lbl',textContent:'ДНЕЙ В НЕДЕЛЮ'}));
+    const dGrid=document.createElement('div');dGrid.style.cssText='display:grid;grid-template-columns:repeat(6,1fr);gap:6px';
+    ['2','3','4','5','6','7'].forEach(d=>{
+      const btn=document.createElement('button');const isA=form.daysPerWeek===d;
+      btn.style.cssText=`padding:12px 4px;border-radius:10px;border:2px solid ${isA?'var(--accent)':'var(--border)'};background:${isA?'var(--accent)':'var(--card)'};color:${isA?'#fff':'var(--text)'};font-size:16px;font-weight:700;cursor:pointer;font-family:inherit`;
+      btn.textContent=d;btn.onclick=()=>{form.daysPerWeek=d;rebuild();};
+      dGrid.appendChild(btn);
+    });
+    dDiv.appendChild(dGrid);content.appendChild(dDiv);
+
+    // Session time
+    const tDiv=document.createElement('div');tDiv.className='field';
+    tDiv.appendChild(Object.assign(document.createElement('div'),{className:'field-lbl',textContent:'ДЛИТЕЛЬНОСТЬ ТРЕНИРОВКИ'}));
+    const tGrid=document.createElement('div');tGrid.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:6px';
+    ['30 мин','45 мин','60 мин','90 мин'].forEach(t=>{
+      const btn=document.createElement('button');const isA=form.sessionTime===t;
+      btn.style.cssText=`padding:10px 4px;border-radius:10px;border:2px solid ${isA?'var(--accent)':'var(--border)'};background:${isA?'var(--accent-light)':'var(--card)'};color:${isA?'var(--accent)':'var(--text)'};font-size:11px;font-weight:${isA?'700':'400'};cursor:pointer;font-family:inherit`;
+      btn.textContent=t;btn.onclick=()=>{form.sessionTime=t;rebuild();};
+      tGrid.appendChild(btn);
+    });
+    tDiv.appendChild(tGrid);content.appendChild(tDiv);
+  }
+
+  else if(step.id==='equip'){
+    const equipOptions=[
+      ['🏢','Спортзал (полное оборудование)'],
+      ['🏠','Дома (гантели, коврик)'],
+      ['💪','Дома (без оборудования)'],
+      ['🏊','Бассейн'],
+      ['🚴','Кардио-зал'],
+    ];
+    const eDiv=document.createElement('div');eDiv.className='field';
+    eDiv.appendChild(Object.assign(document.createElement('div'),{className:'field-lbl',textContent:'ДОСТУПНОЕ ОБОРУДОВАНИЕ'}));
+    const eGrid=document.createElement('div');eGrid.style.cssText='display:flex;flex-direction:column;gap:8px';
+    equipOptions.forEach(([icon,name])=>{
+      const btn=document.createElement('button');const isA=form.equipment===name;
+      btn.style.cssText=`display:flex;align-items:center;gap:10px;padding:13px;border-radius:10px;border:2px solid ${isA?'var(--accent)':'var(--border)'};background:${isA?'var(--accent-light)':'var(--card)'};cursor:pointer;font-family:inherit;text-align:left;width:100%`;
+      btn.innerHTML=`<span style="font-size:22px">${icon}</span><span style="font-size:14px;font-weight:${isA?700:400};color:${isA?'var(--accent)':'var(--text)'}">${name}</span>`;
+      btn.onclick=()=>{form.equipment=name;rebuild();};
+      eGrid.appendChild(btn);
+    });
+    eDiv.appendChild(eGrid);content.appendChild(eDiv);
+  }
+
+  else if(step.id==='health'){
+    const hDiv=document.createElement('div');hDiv.className='field';
+    hDiv.appendChild(Object.assign(document.createElement('div'),{className:'field-lbl',textContent:'ОГРАНИЧЕНИЯ ПО ЗДОРОВЬЮ (НЕОБЯЗАТЕЛЬНО)'}));
+    const hint=document.createElement('div');hint.style.cssText='font-size:12px;color:var(--sub);margin-bottom:8px;line-height:1.5';
+    hint.textContent='Укажи травмы, хронические заболевания, противопоказания — AI учтёт это при составлении плана';
+    const ta=document.createElement('textarea');ta.className='field-inp';ta.style.cssText='height:100px;resize:none;font-size:14px';
+    ta.placeholder='Например: боли в пояснице, проблемы с коленями, гипертония...';
+    ta.value=form.healthNotes;ta.oninput=e=>form.healthNotes=e.target.value;
+    hDiv.appendChild(hint);hDiv.appendChild(ta);content.appendChild(hDiv);
+
+    // Quick checkboxes for common issues
+    const common=['Боли в спине','Проблемы с коленями','Проблемы с сердцем','Гипертония','Диабет','Нет ограничений'];
+    const chips=document.createElement('div');chips.style.cssText='display:flex;flex-wrap:wrap;gap:6px;margin-top:8px';
+    common.forEach(item=>{
+      const btn=document.createElement('button');
+      btn.style.cssText='padding:6px 12px;border-radius:16px;border:1.5px solid var(--border);background:var(--card);color:var(--sub);font-size:12px;cursor:pointer;font-family:inherit';
+      btn.textContent=item;
+      btn.onclick=()=>{
+        if(item==='Нет ограничений'){form.healthNotes='Нет ограничений';}
+        else{form.healthNotes=form.healthNotes?form.healthNotes+', '+item:item;}
+        ta.value=form.healthNotes;
+      };
+      chips.appendChild(btn);
+    });
+    hDiv.appendChild(chips);
+  }
+
+  // Удаляем старые кнопки навигации
+  const oldNav=document.getElementById('onboard-nav');
+  if(oldNav)oldNav.remove();
+
+  wrap.appendChild(content);
+
+  // Кнопки навигации внизу
+  const nav=document.createElement('div');
+  nav.id='onboard-nav';
+  nav.style.cssText='position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:0 auto;background:#fff;padding:12px 20px calc(12px + env(safe-area-inset-bottom,0px));display:flex;gap:10px;border-top:1px solid var(--border);box-shadow:0 -4px 20px rgba(0,0,0,.08)';
+
+  if(form.step>1){
+    const backBtn=document.createElement('button');
+    backBtn.style.cssText='flex:0 0 auto;padding:14px 20px;border-radius:12px;border:2px solid var(--border);background:var(--bg);color:var(--text);font-size:15px;font-weight:700;cursor:pointer;font-family:inherit';
+    backBtn.textContent='← Назад';backBtn.onclick=()=>{form.step--;rebuild();};
+    nav.appendChild(backBtn);
+  }
+
+  const nextBtn=document.createElement('button');
+  nextBtn.style.cssText='flex:1;padding:14px;border-radius:12px;border:none;background:var(--accent);color:#fff;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit';
+  const isLast=form.step===STEPS.length-2;
+  nextBtn.textContent=isLast?'Составить план 🚀':'Далее →';
+  nextBtn.onclick=()=>{
+    if(isLast){
+      // Убираем кнопки навигации ПЕРЕД показом экрана генерации
+      nav.remove();
+      form.step=STEPS.length-1;
+      rebuild();
+      generateAIPlan(form);
+    } else {
+      form.step++;rebuild();
+    }
+  };
+  nav.appendChild(nextBtn);
+  document.body.appendChild(nav);
+}
+
+function addField(container,label,type,placeholder,form,key){
+  const div=document.createElement('div');div.className='field';
+  div.appendChild(Object.assign(document.createElement('div'),{className:'field-lbl',textContent:label.toUpperCase()}));
+  const inp=document.createElement('input');inp.className='field-inp';inp.type=type;inp.placeholder=placeholder;inp.value=form[key];
+  inp.oninput=e=>form[key]=e.target.value;
+  div.appendChild(inp);container.appendChild(div);
+}
+
+function saveProfileAndRender(form){
+  // Убираем кнопки онбординга
+  const oldNav=document.getElementById('onboard-nav');
+  if(oldNav)oldNav.remove();
+
+  S.userProfile={
+    name:form.name,age:+form.age,gender:form.gender,
+    weight:+form.weight,height:+form.height,
+    goal:form.goal,level:form.level,
+    daysPerWeek:+form.daysPerWeek,sessionTime:form.sessionTime,
+    equipment:form.equipment,healthNotes:form.healthNotes,
+    createdAt:today()
+  };
+  S.aiPlan=null;
+  const w=+form.weight,ht=+form.height,a=+form.age;
+  const bmr=form.gender==='мужской'?(10*w+6.25*ht-5*a+5):(10*w+6.25*ht-5*a-161);
+  const tdee=Math.round(bmr*1.55);
+  S.data.profile.calorieGoal=form.goal==='Похудение'?tdee-500:form.goal==='Набор мышечной массы'?tdee+300:tdee;
+  S.data.profile.proteinGoal=Math.round(w*1.8);
+  S.data.profile.fatGoal=Math.round(S.data.profile.calorieGoal*0.25/9);
+  S.data.profile.carbGoal=Math.round((S.data.profile.calorieGoal-S.data.profile.proteinGoal*4-S.data.profile.fatGoal*9)/4);
+  if(form.weight&&!S.weights.find(x=>x.date===today())){
+    S.weights.push({date:today(),kg:+form.weight});
+    saveW();
+  }
+  // Сохраняем всё в localStorage
+  saveProfile();save();
+  // Переходим на главную страницу принудительно
+  document.getElementById('app').innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:12px"><div style="width:40px;height:40px;border:3px solid #dde3ea;border-top-color:#2563eb;border-radius:50%;animation:spin 1s linear infinite"></div><div style="color:#5a6a80;font-size:14px">Загружаю дневник...</div></div>';
+  setTimeout(()=>{ S.userProfile=JSON.parse(localStorage.getItem(PROFK)||'{}').profile||S.userProfile; render(); }, 100);
+}
+function renderGenerating(wrap,form){
+  wrap.innerHTML='';
+  wrap.style.cssText='min-height:100vh;background:linear-gradient(160deg,#1a2a4a 0%,#2563eb 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center';
+
+  const spinStyle=document.createElement('style');
+  spinStyle.textContent='@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}';
+  document.head.appendChild(spinStyle);
+
+  const spinner=document.createElement('div');
+  spinner.style.cssText='width:60px;height:60px;border:4px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:24px';
+
+  const title=document.createElement('div');
+  title.style.cssText='font-size:24px;font-weight:700;color:#fff;margin-bottom:12px';
+  title.textContent='Составляю план...';
+
+  const msgs=['Анализирую твои данные...','Учитываю состояние здоровья...','Подбираю оптимальную нагрузку...','Рассчитываю КБЖУ...','Формирую расписание тренировок...'];
+  const stepEl=document.createElement('div');
+  stepEl.style.cssText='font-size:14px;color:rgba(255,255,255,.7);animation:pulse 2s infinite;margin-bottom:32px';
+  let idx=0;
+  const interval=setInterval(()=>{idx=(idx+1)%msgs.length;stepEl.textContent=msgs[idx];},1800);
+  stepEl.textContent=msgs[0];
+
+  // Обратный отсчёт
+  const countdown=document.createElement('div');
+  countdown.style.cssText='font-size:12px;color:rgba(255,255,255,.5);margin-top:12px';
+  let secs=25;countdown.textContent='Автовыход через '+secs+'с';
+  const cdInt=setInterval(()=>{
+    secs--;
+    countdown.textContent=secs>0?'Автовыход через '+secs+'с':'';
+  },1000);
+
+  function doSkip(){
+    clearInterval(interval);
+    clearInterval(cdInt);
+    saveProfileAndRender(form);
+  }
+
+  // Автовыход через 25 сек
+  const autoTimer=setTimeout(doSkip,25000);
+
+  // Кнопка пропустить
+  const skipBtn=document.createElement('button');
+  skipBtn.style.cssText='background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.4);border-radius:12px;padding:12px 24px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit';
+  skipBtn.textContent='Пропустить → войти без плана';
+  skipBtn.onclick=()=>{clearTimeout(autoTimer);doSkip();};
+
+  wrap.appendChild(spinner);
+  wrap.appendChild(title);
+  wrap.appendChild(stepEl);
+  wrap.appendChild(skipBtn);
+  wrap.appendChild(countdown);
+}
+
+async function generateAIPlan(form){
+  const prompt=`Ты персональный тренер и диетолог. Составь персональный план для пользователя.
+
+ДАННЫЕ:
+- Имя: ${form.name||'не указано'}, ${form.age} лет, ${form.gender}
+- Вес: ${form.weight} кг, рост: ${form.height} см
+- Цель: ${form.goal}
+- Уровень: ${form.level}
+- Тренировок в неделю: ${form.daysPerWeek}
+- Длительность: ${form.sessionTime}
+- Оборудование: ${form.equipment}
+- Ограничения здоровья: ${form.healthNotes||'нет'}
+
+Ответь ТОЛЬКО валидным JSON без markdown:
+{
+  "calories": 2100,
+  "protein": 140,
+  "fat": 70,
+  "carbs": 200,
+  "goal_text": "Краткий анализ цели и прогноз на 3 месяца (2-3 предложения)",
+  "nutrition_tips": ["совет 1","совет 2","совет 3"],
+  "progression": "Как увеличивать нагрузку каждые 2 недели",
+  "warnings": "Предупреждения по здоровью и противопоказания",
+  "schedule": {
+    "Понедельник": {
+      "name": "Название тренировки",
+      "exercises": ["Упражнение 1 — 3×12","Упражнение 2 — 4×10","Упражнение 3 — 3×15"],
+      "duration": "60 мин",
+      "notes": "Пояснение к тренировке"
+    },
+    "Вторник": { "name": "Отдых", "exercises": [], "duration": "", "notes": "Активное восстановление, растяжка" },
+    "Среда": { ... },
+    "Четверг": { ... },
+    "Пятница": { ... },
+    "Суббота": { ... },
+    "Воскресенье": { "name": "Отдых", "exercises": [], "duration": "", "notes": "" }
+  }
+}
+
+ВАЖНО: упражнения подбирай строго под оборудование (${form.equipment}) и с учётом ограничений здоровья. Количество тренировочных дней = ${form.daysPerWeek}, остальные дни = отдых.`;
+
+  try{
+    const raw=await aiCall([{role:'user',content:prompt}], 2000);
+    const planJSON=JSON.parse(raw.replace(/```json|```/g,'').trim());
+
+    // Update macros
+    S.data.profile.calorieGoal=planJSON.calories||2100;
+    S.data.profile.proteinGoal=planJSON.protein||140;
+    S.data.profile.fatGoal=planJSON.fat||70;
+    S.data.profile.carbGoal=planJSON.carbs||200;
+
+    // Build WT from schedule — replace default templates with personalized ones
+    if(planJSON.schedule){
+      const newWT={};
+      Object.entries(planJSON.schedule).forEach(([day,info])=>{
+        if(info.exercises&&info.exercises.length>0){
+          const key=`${info.name} (${day})`;
+          newWT[key]=info.exercises.map(e=>{
+            // Strip "— 3×12" part for exercise name
+            return e.split('—')[0].split(' — ')[0].trim();
+          });
+        }
+      });
+      // If we got workout templates from AI, update WT
+      if(Object.keys(newWT).length>0){
+        // Add personalized templates to WT (keep existing as fallback)
+        Object.assign(WT, newWT);
+      }
+    }
+
+    // Save full plan data
+    S.userProfile={
+      name:form.name,age:+form.age,gender:form.gender,
+      weight:+form.weight,height:+form.height,
+      goal:form.goal,level:form.level,
+      daysPerWeek:+form.daysPerWeek,sessionTime:form.sessionTime,
+      equipment:form.equipment,healthNotes:form.healthNotes,
+      createdAt:today()
+    };
+    S.aiPlan=planJSON; // store structured JSON
+
+    // Add starting weight
+    if(form.weight&&!S.weights.find(x=>x.date===today())){
+      S.weights.push({date:today(),kg:+form.weight});
+      S.weights.sort((a,b)=>a.date.localeCompare(b.date));
+      saveW();
+    }
+
+    saveProfile();save();
+    document.getElementById('app').innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:12px"><div style="width:40px;height:40px;border:3px solid #dde3ea;border-top-color:#2563eb;border-radius:50%;animation:spin 1s linear infinite"></div><div style="color:#5a6a80;font-size:14px">Загружаю дневник...</div></div>';
+    setTimeout(()=>render(),200);
+
+  }catch(err){
+    console.error('Plan generation error:',err);
+
+    // Сохраняем профиль в любом случае
+    S.userProfile={
+      name:form.name,age:+form.age,gender:form.gender,
+      weight:+form.weight,height:+form.height,
+      goal:form.goal,level:form.level,
+      daysPerWeek:+form.daysPerWeek,sessionTime:form.sessionTime,
+      equipment:form.equipment,healthNotes:form.healthNotes,
+      createdAt:today()
+    };
+    S.aiPlan=null;
+
+    // Рассчитываем КБЖУ по формуле Миффлина (без AI)
+    const w=+form.weight,ht=+form.height,a=+form.age;
+    const bmr=form.gender==='мужской'?(10*w+6.25*ht-5*a+5):(10*w+6.25*ht-5*a-161);
+    const tdee=Math.round(bmr*1.55);
+    S.data.profile.calorieGoal=form.goal==='Похудение'?tdee-500:form.goal==='Набор мышечной массы'?tdee+300:tdee;
+    S.data.profile.proteinGoal=Math.round(w*1.8);
+    S.data.profile.fatGoal=Math.round(S.data.profile.calorieGoal*0.25/9);
+    S.data.profile.carbGoal=Math.round((S.data.profile.calorieGoal-S.data.profile.proteinGoal*4-S.data.profile.fatGoal*9)/4);
+
+    if(form.weight&&!S.weights.find(x=>x.date===today())){
+      S.weights.push({date:today(),kg:+form.weight});saveW();
+    }
+    saveProfile();save();
+    document.getElementById('app').innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:12px"><div style="width:40px;height:40px;border:3px solid #dde3ea;border-top-color:#2563eb;border-radius:50%;animation:spin 1s linear infinite"></div><div style="color:#5a6a80;font-size:14px">Загружаю дневник...</div></div>';
+    setTimeout(()=>render(),200);
+
+    // Показываем объяснение почему не сгенерировался план
+    setTimeout(()=>{
+      const isNoKey=err.message==='NO_KEY';
+      const isTimeout=err.message==='TIMEOUT';
+      const msg=isNoKey
+        ?'Профиль сохранён! КБЖУ рассчитаны по формуле.\n\nДля AI плана тренировок нужен ключ DeepSeek — нажми ⚙️ в шапке.'
+        :isTimeout
+        ?'Профиль сохранён! КБЖУ рассчитаны.\n\nAI не ответил за 20 секунд — нет интернета или неверный ключ.\nМожно запросить план позже во вкладке «📋 Мой план».'
+        :'Профиль сохранён! КБЖУ рассчитаны по формуле.\n\nAI план не удалось получить: '+err.message;
+      alert(msg);
+    },300);
+  }
+}
+
+// ── AI SETTINGS MODAL ──
+function openAISettings(){
+  const existing=document.getElementById('ai-settings-overlay');if(existing)existing.remove();
+  const overlay=document.createElement('div');overlay.id='ai-settings-overlay';overlay.className='modal-overlay';
+  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
+  const box=document.createElement('div');box.className='modal-box';box.addEventListener('click',e=>e.stopPropagation());
+
+  const hdr=document.createElement('div');hdr.className='modal-hdr';
+  hdr.appendChild(Object.assign(document.createElement('div'),{className:'modal-title',textContent:'⚙️ Настройки AI'}));
+  const cl=document.createElement('button');cl.className='modal-close';cl.textContent='×';cl.onclick=()=>overlay.remove();hdr.appendChild(cl);box.appendChild(hdr);
+
+  // Info card
+  const info=document.createElement('div');
+  info.style.cssText='background:var(--accent-light);border:1px solid #bfdbfe;border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:13px;color:var(--accent);line-height:1.6';
+  info.innerHTML=`<b>🤖 Используется: DeepSeek AI</b><br>
+Регистрация: <b>platform.deepseek.com</b><br>
+Стоимость: <b>~$0.001 за запрос</b> (почти бесплатно)<br>
+При регистрации: <b>$5 бесплатных кредитов</b>`;
+  box.appendChild(info);
+
+  // Steps
+  const steps=document.createElement('div');
+  steps.style.cssText='background:var(--bg);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--sub);line-height:1.8';
+  steps.innerHTML='<b style="color:var(--text)">Как получить ключ:</b><br>1. Зайди на platform.deepseek.com<br>2. Зарегистрируйся<br>3. Меню слева → API Keys<br>4. Нажми «Create new secret key»<br>5. Скопируй ключ (начинается с sk-)';
+  box.appendChild(steps);
+
+  // Key input
+  const keyDiv=document.createElement('div');keyDiv.className='field';
+  keyDiv.appendChild(Object.assign(document.createElement('div'),{className:'field-lbl',textContent:'DEEPSEEK API КЛЮЧ'}));
+  const keyInp=document.createElement('input');
+  keyInp.className='field-inp';keyInp.type='password';keyInp.placeholder='sk-...';
+  keyInp.value=getAIKey();
+  keyDiv.appendChild(keyInp);box.appendChild(keyDiv);
+
+  // Status
+  const statusDiv=document.createElement('div');statusDiv.style.cssText='font-size:12px;margin-bottom:10px;min-height:18px';
+  if(getAIKey()){statusDiv.style.color='var(--green)';statusDiv.textContent='✅ Ключ сохранён';}
+  box.appendChild(statusDiv);
+
+  // Test button
+  const testBtn=document.createElement('button');
+  testBtn.style.cssText='width:100%;padding:12px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:8px';
+  testBtn.textContent='🔍 Проверить ключ';
+  testBtn.onclick=async()=>{
+    const k=keyInp.value.trim();if(!k)return;
+    testBtn.disabled=true;testBtn.textContent='Проверяю...';
+    try{
+      const r=await fetch('https://api.deepseek.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+k},body:JSON.stringify({model:'deepseek-chat',max_tokens:10,messages:[{role:'user',content:'Hi'}]})});
+      if(r.ok){statusDiv.style.color='var(--green)';statusDiv.textContent='✅ Ключ работает!';}
+      else{statusDiv.style.color='var(--red)';statusDiv.textContent='❌ Неверный ключ';}
+    }catch{statusDiv.style.color='var(--red)';statusDiv.textContent='❌ Ошибка соединения';}
+    testBtn.disabled=false;testBtn.textContent='🔍 Проверить ключ';
+  };
+  box.appendChild(testBtn);
+
+  // Save
+  const saveBtn=document.createElement('button');saveBtn.className='modal-save';saveBtn.textContent='Сохранить';
+  saveBtn.onclick=()=>{setAIKey(keyInp.value.trim());overlay.remove();};
+  box.appendChild(saveBtn);
+
+  // Clear
+  if(getAIKey()){
+    const clearBtn=document.createElement('button');
+    clearBtn.style.cssText='width:100%;padding:10px;background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:inherit;margin-top:4px';
+    clearBtn.textContent='Удалить ключ';
+    clearBtn.onclick=()=>{setAIKey('');keyInp.value='';statusDiv.textContent='';};
+    box.appendChild(clearBtn);
+  }
+
+  overlay.appendChild(box);document.body.appendChild(overlay);
+}
+function rMyPlan(){
+  const frag=document.createDocumentFragment();
+  const p=S.userProfile;
+  const plan=S.aiPlan; // now a JSON object
+
+  // Profile card
+  if(p){
+    const card=document.createElement('div');
+    card.style.cssText='background:linear-gradient(135deg,var(--header),#2563eb);border-radius:14px;padding:16px;margin-bottom:14px;color:#fff';
+    card.innerHTML=`
+      <div style="font-size:18px;font-weight:700;margin-bottom:8px">👤 ${p.name||'Мой профиль'}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:12px;margin-bottom:10px">
+        <div style="background:rgba(255,255,255,.15);border-radius:8px;padding:8px;text-align:center"><div style="font-size:18px;font-weight:700">${p.age}</div><div style="opacity:.7">лет</div></div>
+        <div style="background:rgba(255,255,255,.15);border-radius:8px;padding:8px;text-align:center"><div style="font-size:18px;font-weight:700">${p.weight}</div><div style="opacity:.7">кг</div></div>
+        <div style="background:rgba(255,255,255,.15);border-radius:8px;padding:8px;text-align:center"><div style="font-size:18px;font-weight:700">${p.height}</div><div style="opacity:.7">см</div></div>
+      </div>
+      <div style="font-size:13px;opacity:.85">🎯 ${p.goal} · ${p.level} · ${p.daysPerWeek} дней/нед · ${p.sessionTime}</div>
+      ${p.equipment?`<div style="font-size:12px;opacity:.7;margin-top:4px">🏢 ${p.equipment}</div>`:''}
+      ${p.healthNotes&&p.healthNotes!=='Нет ограничений'?`<div style="font-size:12px;opacity:.7;margin-top:4px">⚠️ ${p.healthNotes}</div>`:''}
+    `;
+    frag.appendChild(card);
+  }
+
+  // Edit profile button
+  const editBtn=document.createElement('button');
+  editBtn.style.cssText='width:100%;padding:11px;background:var(--card);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:16px';
+  editBtn.textContent='✏️ Изменить профиль и пересоставить план';
+  editBtn.onclick=()=>{if(confirm('Пересоставить план? Данные дневника сохранятся.')){S.userProfile=null;S.aiPlan=null;saveProfile();render();}};
+  frag.appendChild(editBtn);
+
+  if(!plan){
+    const noplan=document.createElement('div');noplan.style.cssText='text-align:center;padding:30px 20px';
+    noplan.innerHTML='<div style="font-size:40px;margin-bottom:12px">📋</div><div style="font-size:14px;color:var(--muted);margin-bottom:16px">AI план не был получен.<br>Возможно не было ключа DeepSeek или нет интернета.</div>';
+    // Кнопка повторного запроса
+    if(p){
+      const retryBtn=document.createElement('button');
+      retryBtn.style.cssText='width:100%;padding:13px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:8px';
+      retryBtn.textContent='🤖 Запросить план сейчас';
+      retryBtn.onclick=()=>{
+        if(!getAIKey()){openAISettings();return;}
+        // Показываем загрузку
+        retryBtn.disabled=true;retryBtn.textContent='⏳ Составляю план...';
+        generateAIPlan(p).catch(()=>{retryBtn.disabled=false;retryBtn.textContent='🤖 Запросить план сейчас';});
+      };
+      noplan.appendChild(retryBtn);
+    }
+    const editBtn2=document.createElement('button');
+    editBtn2.style.cssText='width:100%;padding:11px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;cursor:pointer;font-family:inherit';
+    editBtn2.textContent='✏️ Пройти опрос заново';
+    editBtn2.onclick=()=>{if(confirm('Пройти опрос заново?')){S.userProfile=null;S.aiPlan=null;saveProfile();render();}};
+    noplan.appendChild(editBtn2);
+    frag.appendChild(noplan);return frag;
+  }
+
+  // ── Macros card ──
+  if(plan.calories){
+    const mac=document.createElement('div');
+    mac.style.cssText='background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow)';
+    mac.innerHTML=`<div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:10px">🍽️ ТВОИ НОРМЫ ПИТАНИЯ</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center">
+      <div style="background:var(--orange-light);border-radius:8px;padding:8px"><div style="font-size:20px;font-weight:700;color:var(--orange)">${plan.calories}</div><div style="font-size:10px;color:var(--muted)">ккал</div></div>
+      <div style="background:var(--green-light);border-radius:8px;padding:8px"><div style="font-size:20px;font-weight:700;color:var(--green)">${plan.protein}г</div><div style="font-size:10px;color:var(--muted)">белок</div></div>
+      <div style="background:var(--pink-light);border-radius:8px;padding:8px"><div style="font-size:20px;font-weight:700;color:var(--pink)">${plan.fat}г</div><div style="font-size:10px;color:var(--muted)">жиры</div></div>
+      <div style="background:var(--yellow-light);border-radius:8px;padding:8px"><div style="font-size:20px;font-weight:700;color:var(--yellow)">${plan.carbs}г</div><div style="font-size:10px;color:var(--muted)">углев</div></div>
+    </div>`;
+    frag.appendChild(mac);
+  }
+
+  // ── Goal text ──
+  if(plan.goal_text){
+    const gc=document.createElement('div');
+    gc.style.cssText='background:var(--card);border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow)';
+    gc.innerHTML=`<div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:6px">🎯 ТВОЯ ЦЕЛЬ</div><div style="font-size:13px;color:var(--text);line-height:1.6">${plan.goal_text}</div>`;
+    frag.appendChild(gc);
+  }
+
+  // ── Weekly schedule ──
+  if(plan.schedule){
+    const sh=document.createElement('div');sh.className='section-header';
+    sh.appendChild(Object.assign(document.createElement('div'),{className:'section-title',textContent:'📅 Расписание тренировок'}));
+    frag.appendChild(sh);
+
+    const days=['Понедельник','Вторник','Среда','Четверг','Пятница','Суббота','Воскресенье'];
+    const dayShort=['ПН','ВТ','СР','ЧТ','ПТ','СБ','ВС'];
+
+    days.forEach((day,i)=>{
+      const info=plan.schedule[day];
+      if(!info)return;
+      const isRest=!info.exercises||info.exercises.length===0;
+
+      const card=document.createElement('div');
+      card.style.cssText=`background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px 14px;margin-bottom:8px;box-shadow:var(--shadow);${isRest?'opacity:.6':''}`;
+
+      const hdr=document.createElement('div');hdr.style.cssText='display:flex;align-items:center;gap:10px;margin-bottom:isRest?0:8px';
+      const dayBadge=document.createElement('div');
+      dayBadge.style.cssText=`width:36px;height:36px;border-radius:50%;background:${isRest?'var(--bg)':'var(--accent)'};color:${isRest?'var(--muted)':'#fff'};font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0`;
+      dayBadge.textContent=dayShort[i];
+      const dayInfo=document.createElement('div');
+      const dayName=document.createElement('div');dayName.style.cssText='font-size:14px;font-weight:700;color:var(--text)';
+      dayName.textContent=info.name||day;
+      const dayMeta=document.createElement('div');dayMeta.style.cssText='font-size:11px;color:var(--sub);margin-top:1px';
+      dayMeta.textContent=info.duration?day+' · '+info.duration:day;
+      dayInfo.appendChild(dayName);dayInfo.appendChild(dayMeta);
+      hdr.appendChild(dayBadge);hdr.appendChild(dayInfo);
+
+      // "Start workout" button for training days
+      if(!isRest){
+        const startBtn=document.createElement('button');
+        startBtn.style.cssText='margin-left:auto;background:var(--accent);border:none;border-radius:8px;padding:6px 12px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;flex-shrink:0';
+        startBtn.textContent='▶ Начать';
+        startBtn.onclick=()=>{
+          // Add this workout to today
+          const exercises=info.exercises.map(e=>e.split('—')[0].split(' — ')[0].trim());
+          const wName=info.name||day;
+          // Add to WT if not there
+          if(!WT[wName])WT[wName]=exercises;
+          S.workoutModal={
+            editing:null,mode:'plan',
+            form:{type:wName,notes:'',duration:info.duration?.replace(/\D/g,'')||'60',pulse:'',name:''},
+            customExercises:[]
+          };
+          S.tab='today';
+          buildWorkoutModal();
+          render();
+        };
+        hdr.appendChild(startBtn);
+      }
+      card.appendChild(hdr);
+
+      if(!isRest&&info.exercises&&info.exercises.length>0){
+        const exList=document.createElement('div');exList.style.cssText='margin-top:8px';
+        info.exercises.forEach((ex,idx)=>{
+          const row=document.createElement('div');
+          row.style.cssText='display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--text)';
+          const num=document.createElement('div');num.style.cssText='width:18px;height:18px;border-radius:50%;background:var(--accent-light);color:var(--accent);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0';
+          num.textContent=idx+1;
+          const name=document.createElement('span');name.textContent=ex;
+          row.appendChild(num);row.appendChild(name);exList.appendChild(row);
+        });
+        card.appendChild(exList);
+      }
+
+      if(info.notes&&isRest){
+        const nt=document.createElement('div');nt.style.cssText='font-size:11px;color:var(--muted);margin-top:4px;font-style:italic';nt.textContent=info.notes;card.appendChild(nt);
+      }
+      frag.appendChild(card);
+    });
+  }
+
+  // ── Nutrition tips ──
+  if(plan.nutrition_tips&&plan.nutrition_tips.length){
+    const nc=document.createElement('div');
+    nc.style.cssText='background:var(--card);border:1px solid var(--border);border-left:4px solid var(--green);border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow)';
+    nc.innerHTML=`<div style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:8px">🥗 СОВЕТЫ ПО ПИТАНИЮ</div>`;
+    plan.nutrition_tips.forEach(tip=>{
+      const t=document.createElement('div');t.style.cssText='font-size:13px;color:var(--text);padding:4px 0;border-bottom:1px solid var(--border);line-height:1.5';
+      t.textContent='• '+tip;nc.appendChild(t);
+    });
+    frag.appendChild(nc);
+  }
+
+  // ── Progression ──
+  if(plan.progression){
+    const pc=document.createElement('div');
+    pc.style.cssText='background:var(--card);border:1px solid var(--border);border-left:4px solid var(--teal);border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow)';
+    pc.innerHTML=`<div style="font-size:13px;font-weight:700;color:var(--teal);margin-bottom:6px">📈 ПРОГРЕССИЯ</div><div style="font-size:13px;color:var(--text);line-height:1.6">${plan.progression}</div>`;
+    frag.appendChild(pc);
+  }
+
+  // ── Warnings ──
+  if(plan.warnings){
+    const wc=document.createElement('div');
+    wc.style.cssText='background:var(--yellow-light);border:1px solid #fde68a;border-left:4px solid var(--yellow);border-radius:12px;padding:14px;margin-bottom:12px';
+    wc.innerHTML=`<div style="font-size:13px;font-weight:700;color:var(--yellow);margin-bottom:6px">⚠️ ВАЖНО</div><div style="font-size:13px;color:var(--text);line-height:1.6">${plan.warnings}</div>`;
+    frag.appendChild(wc);
+  }
+
+  return frag;
+}
+
+function regSW(){if(!('serviceWorker'in navigator))return;const code=`self.addEventListener('install',e=>self.skipWaiting());self.addEventListener('activate',e=>clients.claim());self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(caches.open('fit-v7').then(async c=>{const cached=await c.match(e.request);if(cached)return cached;try{const r=await fetch(e.request);if(e.request.url.startsWith(location.origin))c.put(e.request,r.clone());return r;}catch{return cached||new Response('Offline');}}));});`;navigator.serviceWorker.register(URL.createObjectURL(new Blob([code],{type:'application/javascript'}))).catch(()=>{});}
+// ── ЗАПУСК ──
+async function startup(){
+  const app=document.getElementById('app');
+  app.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px"><div style="width:48px;height:48px;border:3px solid #dde3ea;border-top-color:#2563eb;border-radius:50%;animation:spin 1s linear infinite"></div><div style="font-size:14px;color:#5a6a80">Загрузка...</div></div><style>@keyframes spin{to{transform:rotate(360deg)}}</style>';
+
+  try{
+    load();
+    const loggedIn=await initAuth();
+    if(loggedIn){
+      try{ await cloudLoad(); }catch(e){ console.warn('Cloud load failed:',e); }
+    }
+  }catch(e){
+    console.error('Startup error:',e);
+  }
+
+  try{ render(); }catch(e){ 
+    console.error('Render error:',e);
+    app.innerHTML='<div style="padding:20px;text-align:center;color:red">Ошибка загрузки: '+e.message+'</div>';
+  }
+  
+  try{ regSW(); }catch(e){}
+}
+
+startup();
+</script>
+</body>
+</html>
