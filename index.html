@@ -447,8 +447,9 @@ let S={
   customDB:[],weights:[],
   mySupps:[],
   analyses:[],
-  userProfile:null, // null = не прошёл онбординг
-  aiPlan:null,      // сгенерированный план тренировок
+  userProfile:null,
+  aiPlan:null,
+  foodsDB:[], // база продуктов из Supabase
   tab:'today',selDate:null,weekOff:0,expW:{},
   foodModal:null,workoutModal:null,weightModal:false,weightInput:'',te:null
 };
@@ -460,7 +461,43 @@ function fmtDate(ds){return new Date(ds+'T12:00:00').toLocaleDateString('ru-RU',
 function fmtShort(ds){return new Date(ds+'T12:00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'short'});}
 function getWeekDates(off){const now=new Date();const dow=now.getDay()===0?6:now.getDay()-1;const mon=new Date(now);mon.setDate(now.getDate()-dow+off*7);return Array.from({length:7},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d.toISOString().split('T')[0];});}
 function recalc(e){return{...e,totalCalories:Math.round(e.foods.reduce((s,f)=>s+f.calories,0)),totalProtein:Math.round(e.foods.reduce((s,f)=>s+f.protein,0)*10)/10,totalFat:Math.round(e.foods.reduce((s,f)=>s+(f.fat||0),0)*10)/10,totalCarbs:Math.round(e.foods.reduce((s,f)=>s+(f.carbs||0),0)*10)/10};}
-function searchFood(q){if(!q||q.length<2)return[];const lq=q.toLowerCase();const all=[...BUILTIN_DB,...S.customDB.map(p=>[p.name,p.cal,p.prot,p.fat||0,p.carbs||0,p.avg||null,true])];return all.filter(([n])=>n.toLowerCase().includes(lq)).sort((a,b)=>(a[0].toLowerCase().startsWith(lq)?0:1)-(b[0].toLowerCase().startsWith(lq)?0:1)).slice(0,8);}
+function searchFood(q){
+  if(!q||q.length<2)return[];
+  const lq=q.toLowerCase();
+  // Используем Supabase базу если загружена, иначе встроенную
+  const dbSource=S.foodsDB&&S.foodsDB.length>0
+    ? S.foodsDB.map(f=>[f.name,f.calories,f.protein,f.fat,f.carbs,f.avg_weight,false])
+    : BUILTIN_DB;
+  const all=[...dbSource,...S.customDB.map(p=>[p.name,p.cal,p.prot,p.fat||0,p.carbs||0,p.avg||null,true])];
+  return all.filter(([n])=>n.toLowerCase().includes(lq))
+    .sort((a,b)=>(a[0].toLowerCase().startsWith(lq)?0:1)-(b[0].toLowerCase().startsWith(lq)?0:1))
+    .slice(0,10);
+}
+
+// Загрузка базы продуктов из Supabase
+async function loadFoodsDB(){
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/foods?is_public=eq.true&order=name&select=*',{
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
+    });
+    if(r.ok){
+      const data=await r.json();
+      if(data&&data.length>0){
+        S.foodsDB=data;
+        // Кешируем в localStorage
+        try{localStorage.setItem('fit-foods-db',JSON.stringify(data));}catch(e){}
+        console.log('Foods loaded from Supabase:',data.length);
+      }
+    }
+  }catch(e){
+    // Загружаем из кеша если нет интернета
+    try{
+      const cached=localStorage.getItem('fit-foods-db');
+      if(cached)S.foodsDB=JSON.parse(cached);
+    }catch(e2){}
+    console.warn('Foods DB load failed, using cache/builtin');
+  }
+}
 function getAW(){const w=S.weights.find(x=>x.date===ad());return w?w.kg:null;}
 function load(){
   try{const d=localStorage.getItem(SK);if(d)S.data=JSON.parse(d);}catch(e){}
@@ -563,6 +600,8 @@ function render(){
   if(currentUser&&!S.userProfile){app.appendChild(renderOnboarding());return;}
   // 3. Гость без профиля → сразу в приложение (без опроса)
   const adate=ad();
+  if(!S.data)S.data={profile:{proteinGoal:140,fatGoal:70,carbGoal:200,calorieGoal:2100},entries:[]};
+  if(!S.data.entries)S.data.entries=[];
   let te=S.data.entries.find(e=>e.date===adate);
   if(!te){te={date:adate,foods:[],workouts:[],totalCalories:0,totalProtein:0,totalFat:0,totalCarbs:0};S.data.entries.unshift(te);S.data.entries.sort((a,b)=>b.date.localeCompare(a.date));save();}
   S.te=te;
@@ -2812,11 +2851,10 @@ async function startup(){
     console.error('Startup error:',e);
   }
 
-  try{ render(); }catch(e){ 
-    console.error('Render error:',e);
-    app.innerHTML='<div style="padding:20px;text-align:center;color:red">Ошибка загрузки: '+e.message+'</div>';
-  }
-  
+  // Загружаем базу продуктов из Supabase (фоново)
+  loadFoodsDB();
+
+  render();
   try{ regSW(); }catch(e){}
 }
 
