@@ -610,12 +610,20 @@ function render(){
   app.appendChild(rDateNav());
   app.appendChild(rTabs());
   const ct=h('div',{className:'content'});
-  if(S.tab==='today')ct.appendChild(rToday());
-  else if(S.tab==='history')ct.appendChild(rHistory());
-  else if(S.tab==='plan')ct.appendChild(rMyPlan());
-  else if(S.tab==='supps')ct.appendChild(rSupps());
-  else if(S.tab==='analyses')ct.appendChild(rAnalyses());
-  else ct.appendChild(rMyDB());
+  try{
+    if(S.tab==='today')ct.appendChild(rToday());
+    else if(S.tab==='history')ct.appendChild(rHistory());
+    else if(S.tab==='plan')ct.appendChild(rMyPlan());
+    else if(S.tab==='supps')ct.appendChild(rSupps());
+    else if(S.tab==='analyses')ct.appendChild(rAnalyses());
+    else ct.appendChild(rMyDB());
+  }catch(e){
+    console.error('Tab render error:',e);
+    const errDiv=document.createElement('div');
+    errDiv.style.cssText='padding:20px;color:red;font-size:13px;word-break:break-all';
+    errDiv.textContent='Ошибка: '+e.message+' ('+e.stack?.split('\n')[1]?.trim()+')';
+    ct.appendChild(errDiv);
+  }
   app.appendChild(ct);
   if(S.workoutModal)app.appendChild(rWorkoutModal());
   if(S.weightModal)app.appendChild(rWeightModal());
