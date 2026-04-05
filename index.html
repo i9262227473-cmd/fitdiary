@@ -592,26 +592,36 @@ async function aiCall(messages, maxTokens=600){
   }
 }
 
-// Сканирование этикетки через DeepSeek Vision
+// Сканирование этикетки через Groq Vision (Llama 4 Scout)
 async function analyzeLabel(b64){
   const key=getAIKey();
   if(!key) throw new Error('NO_KEY');
-  // DeepSeek Vision
-  const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
-    body:JSON.stringify({
-      model:'llama-3.3-70b-versatile',
-      max_tokens:300,
-      messages:[{role:'user',content:[
-        {type:'image_url',image_url:{url:'data:image/jpeg;base64,'+b64}},
-        {type:'text',text:'Прочитай этикетку продукта. На 100г: калории, белки, жиры, углеводы. Ответь ТОЛЬКО JSON без markdown: {"name":"название","calories":123,"protein":12,"fat":5,"carbs":10}'}
-      ]}]
-    })
-  });
-  const d=await r.json();
-  const txt=d.choices?.[0]?.message?.content||'{}';
-  return JSON.parse(txt.replace(/```json|```/g,'').trim());
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),20000);
+  try{
+    const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      signal:controller.signal,
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+      body:JSON.stringify({
+        model:'meta-llama/llama-4-scout-17b-16e-instruct',
+        max_tokens:300,
+        messages:[{role:'user',content:[
+          {type:'image_url',image_url:{url:'data:image/jpeg;base64,'+b64}},
+          {type:'text',text:'Прочитай этикетку продукта на фото. Найди КБЖУ на 100г. Ответь ТОЛЬКО JSON без markdown: {"name":"название продукта","calories":99,"protein":20,"fat":0,"carbs":4.8}'}
+        ]}]
+      })
+    });
+    clearTimeout(timer);
+    if(!r.ok){const e=await r.text();throw new Error(e);}
+    const d=await r.json();
+    const txt=d.choices?.[0]?.message?.content||'{}';
+    return JSON.parse(txt.replace(/```json|```/g,'').trim());
+  }catch(e){
+    clearTimeout(timer);
+    if(e.name==='AbortError')throw new Error('TIMEOUT');
+    throw e;
+  }
 }
 function h(tag,attrs,...kids){const el=document.createElement(tag);if(attrs)Object.entries(attrs).forEach(([k,v])=>{if(k==='style'&&typeof v==='object')Object.assign(el.style,v);else if(k.startsWith('on'))el.addEventListener(k.slice(2).toLowerCase(),v);else if(k==='className')el.className=v;else el.setAttribute(k,v);});kids.flat(Infinity).forEach(c=>{if(c==null||c===false)return;el.appendChild(typeof c==='string'?document.createTextNode(c):c);});return el;}
 function inp(v,ph,fn,type='text',cls='field-inp'){const el=h('input',{className:cls,type,placeholder:ph,value:v});el.addEventListener('input',e=>fn(e.target.value));return el;}
