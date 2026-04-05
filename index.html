@@ -450,6 +450,7 @@ let S={
   userProfile:null,
   aiPlan:null,
   foodsDB:[], // база продуктов из Supabase
+  exercisesDB:[], // база упражнений из Supabase
   tab:'today',selDate:null,weekOff:0,expW:{},
   foodModal:null,workoutModal:null,weightModal:false,weightInput:'',te:null
 };
@@ -474,7 +475,28 @@ function searchFood(q){
     .slice(0,10);
 }
 
-// Загрузка базы продуктов из Supabase
+// Загрузка базы упражнений из Supabase
+async function loadExercisesDB(){
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/exercises?is_public=eq.true&order=name&select=*',{
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
+    });
+    if(r.ok){
+      const data=await r.json();
+      if(data&&data.length>0){
+        S.exercisesDB=data;
+        try{localStorage.setItem('fit-exercises-db',JSON.stringify(data));}catch(e){}
+        console.log('Exercises loaded from Supabase:',data.length);
+      }
+    }
+  }catch(e){
+    try{
+      const cached=localStorage.getItem('fit-exercises-db');
+      if(cached)S.exercisesDB=JSON.parse(cached);
+    }catch(e2){}
+    console.warn('Exercises DB load failed, using builtin');
+  }
+}
 async function loadFoodsDB(){
   try{
     const r=await fetch(SB_URL+'/rest/v1/foods?is_public=eq.true&order=name&select=*',{
@@ -530,13 +552,13 @@ function saveSupps(){try{localStorage.setItem(SUPPK,JSON.stringify(S.mySupps));}
 function saveAnalyses(){try{localStorage.setItem(ANALYSK,JSON.stringify(S.analyses));}catch(e){}scheduleSave();}
 function saveProfile(){try{localStorage.setItem(PROFK,JSON.stringify({profile:S.userProfile,plan:S.aiPlan}));}catch(e){}scheduleSave();}
 
-// ── AI API (DeepSeek) ──
+// ── AI API (Groq) ──
 const AIKEY_K='fit-aikey-v1';
 const DEFAULT_AI_KEY='sk-6a01c7472fec46d1b93db06accb15fc0';
 function getAIKey(){try{return localStorage.getItem(AIKEY_K)||DEFAULT_AI_KEY;}catch(e){return DEFAULT_AI_KEY;}}
 function setAIKey(k){try{localStorage.setItem(AIKEY_K,k);}catch(e){}}
 
-// Универсальный вызов DeepSeek API
+// Универсальный вызов Groq API
 // Гостевой режим
 const GUEST_KEY='fit-guest-v1';
 function isGuest(){try{const g=localStorage.getItem(GUEST_KEY);if(!g)return false;const d=JSON.parse(g);return Date.now()<d.expires;}catch(e){return false;}}
@@ -546,15 +568,18 @@ function clearGuest(){localStorage.removeItem(GUEST_KEY);}
 async function aiCall(messages, maxTokens=600){
   const key=getAIKey();
   if(!key) throw new Error('NO_KEY');
-  // Таймаут 20 секунд
   const controller=new AbortController();
   const timer=setTimeout(()=>controller.abort(),20000);
   try{
-    const r=await fetch('https://api.deepseek.com/v1/chat/completions',{
+    const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{
       method:'POST',
       signal:controller.signal,
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
-      body:JSON.stringify({model:'deepseek-chat',max_tokens:maxTokens,messages})
+      body:JSON.stringify({
+        model:'llama-3.3-70b-versatile',
+        max_tokens:maxTokens,
+        messages
+      })
     });
     clearTimeout(timer);
     if(!r.ok){const e=await r.text();throw new Error(e);}
@@ -572,11 +597,11 @@ async function analyzeLabel(b64){
   const key=getAIKey();
   if(!key) throw new Error('NO_KEY');
   // DeepSeek Vision
-  const r=await fetch('https://api.deepseek.com/v1/chat/completions',{
+  const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{
     method:'POST',
     headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
     body:JSON.stringify({
-      model:'deepseek-chat',
+      model:'llama-3.3-70b-versatile',
       max_tokens:300,
       messages:[{role:'user',content:[
         {type:'image_url',image_url:{url:'data:image/jpeg;base64,'+b64}},
@@ -594,14 +619,17 @@ function selEl(v,opts,fn){const s=h('select',{className:'field-sel'});opts.forEa
 function fld(lbl,el){return h('div',{className:'field'},h('div',{className:'field-lbl'},lbl),el);}
 function render(){
   const app=document.getElementById('app');app.innerHTML='';
-  // 1. Не вошёл и не гость → экран авторизации
-  if(!currentUser&&!isGuest()){app.appendChild(renderAuth());return;}
-  // 2. Зарегистрирован, но нет профиля → онбординг
+  // Онбординг только для зарегистрированных без профиля
   if(currentUser&&!S.userProfile){app.appendChild(renderOnboarding());return;}
-  // 3. Гость без профиля → сразу в приложение (без опроса)
+  // Все остальные сразу в приложение (гость или авторизован)
   const adate=ad();
   if(!S.data)S.data={profile:{proteinGoal:140,fatGoal:70,carbGoal:200,calorieGoal:2100},entries:[]};
   if(!S.data.entries)S.data.entries=[];
+  if(!S.data.profile)S.data.profile={proteinGoal:140,fatGoal:70,carbGoal:200,calorieGoal:2100};
+  if(!S.data.profile.calorieGoal)S.data.profile.calorieGoal=2100;
+  if(!S.data.profile.proteinGoal)S.data.profile.proteinGoal=140;
+  if(!S.data.profile.fatGoal)S.data.profile.fatGoal=70;
+  if(!S.data.profile.carbGoal)S.data.profile.carbGoal=200;
   let te=S.data.entries.find(e=>e.date===adate);
   if(!te){te={date:adate,foods:[],workouts:[],totalCalories:0,totalProtein:0,totalFat:0,totalCarbs:0};S.data.entries.unshift(te);S.data.entries.sort((a,b)=>b.date.localeCompare(a.date));save();}
   S.te=te;
@@ -720,7 +748,12 @@ function rTabs(){
   return h('div',{className:'tabs'},...tabs.map(([k,l])=>h('button',{className:'tab-btn'+(S.tab===k?' active':''),onClick:()=>{S.tab=k;render();}},l)));
 }
 function rToday(){
-  const te=S.te,p=S.data.profile;
+  const te=S.te;
+  // Защита от undefined профиля
+  const p={
+    calorieGoal:2100, proteinGoal:140, fatGoal:70, carbGoal:200,
+    ...(S.data?.profile||{})
+  };
   const frag=document.createDocumentFragment();
   if(S.weights.length>=2)frag.appendChild(rWeightChart());
   const cp=Math.min(100,Math.round(te.totalCalories/p.calorieGoal*100));
@@ -1564,11 +1597,11 @@ ${workoutList}
     const errIcon=document.createElement('div');errIcon.style.fontSize='36px';errIcon.textContent=isNoKey?'🔑':'😔';
     const errMsg=document.createElement('div');
     errMsg.style.cssText='font-size:14px;color:var(--red);margin-top:10px;margin-bottom:8px;font-weight:600';
-    errMsg.textContent=isNoKey?'Введи DeepSeek API ключ':'Не удалось получить анализ';
+    errMsg.textContent=isNoKey?'Введи Groq API ключ':'Не удалось получить анализ';
     const errHint=document.createElement('div');
     errHint.style.cssText='font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:12px';
     errHint.textContent=isNoKey
-      ?'Зарегистрируйся на platform.deepseek.com → API Keys → Create key. Стоимость: $0.001 за запрос (почти бесплатно). При регистрации дают $5 кредитов.'
+      ?'Зарегистрируйся на console.groq.com → API Keys → Create API Key. Полностью бесплатно. 1000 запросов в день.'
       :'Проверь правильность ключа или интернет-соединение.';
     const settingsBtn=document.createElement('button');
     settingsBtn.className='modal-save';settingsBtn.style.marginBottom='8px';
@@ -2583,7 +2616,7 @@ async function generateAIPlan(form){
       const isNoKey=err.message==='NO_KEY';
       const isTimeout=err.message==='TIMEOUT';
       const msg=isNoKey
-        ?'Профиль сохранён! КБЖУ рассчитаны по формуле.\n\nДля AI плана тренировок нужен ключ DeepSeek — нажми ⚙️ в шапке.'
+        ?'Профиль сохранён! КБЖУ рассчитаны по формуле.\n\nДля AI плана тренировок нужен ключ Groq — нажми ⚙️ в шапке.'
         :isTimeout
         ?'Профиль сохранён! КБЖУ рассчитаны.\n\nAI не ответил за 20 секунд — нет интернета или неверный ключ.\nМожно запросить план позже во вкладке «📋 Мой план».'
         :'Профиль сохранён! КБЖУ рассчитаны по формуле.\n\nAI план не удалось получить: '+err.message;
@@ -2606,21 +2639,21 @@ function openAISettings(){
   // Info card
   const info=document.createElement('div');
   info.style.cssText='background:var(--accent-light);border:1px solid #bfdbfe;border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:13px;color:var(--accent);line-height:1.6';
-  info.innerHTML=`<b>🤖 Используется: DeepSeek AI</b><br>
-Регистрация: <b>platform.deepseek.com</b><br>
-Стоимость: <b>~$0.001 за запрос</b> (почти бесплатно)<br>
-При регистрации: <b>$5 бесплатных кредитов</b>`;
+  info.innerHTML=`<b>🤖 Используется: Groq AI (бесплатно)</b><br>
+Регистрация: <b>console.groq.com</b><br>
+Стоимость: <b>полностью бесплатно</b><br>
+Лимит: <b>1000 запросов в день</b>`;
   box.appendChild(info);
 
   // Steps
   const steps=document.createElement('div');
   steps.style.cssText='background:var(--bg);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--sub);line-height:1.8';
-  steps.innerHTML='<b style="color:var(--text)">Как получить ключ:</b><br>1. Зайди на platform.deepseek.com<br>2. Зарегистрируйся<br>3. Меню слева → API Keys<br>4. Нажми «Create new secret key»<br>5. Скопируй ключ (начинается с sk-)';
+  steps.innerHTML='<b style="color:var(--text)">Как получить ключ:</b><br>1. Зайди на console.groq.com<br>2. Зарегистрируйся (бесплатно)<br>3. Нажми «API Keys» → «Create API Key»<br>4. Скопируй ключ (начинается с gsk_)';
   box.appendChild(steps);
 
   // Key input
   const keyDiv=document.createElement('div');keyDiv.className='field';
-  keyDiv.appendChild(Object.assign(document.createElement('div'),{className:'field-lbl',textContent:'DEEPSEEK API КЛЮЧ'}));
+  keyDiv.appendChild(Object.assign(document.createElement('div'),{className:'field-lbl',textContent:'GROQ API КЛЮЧ'}));
   const keyInp=document.createElement('input');
   keyInp.className='field-inp';keyInp.type='password';keyInp.placeholder='sk-...';
   keyInp.value=getAIKey();
@@ -2639,7 +2672,7 @@ function openAISettings(){
     const k=keyInp.value.trim();if(!k)return;
     testBtn.disabled=true;testBtn.textContent='Проверяю...';
     try{
-      const r=await fetch('https://api.deepseek.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+k},body:JSON.stringify({model:'deepseek-chat',max_tokens:10,messages:[{role:'user',content:'Hi'}]})});
+      const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+k},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:10,messages:[{role:'user',content:'Hi'}]})});
       if(r.ok){statusDiv.style.color='var(--green)';statusDiv.textContent='✅ Ключ работает!';}
       else{statusDiv.style.color='var(--red)';statusDiv.textContent='❌ Неверный ключ';}
     }catch{statusDiv.style.color='var(--red)';statusDiv.textContent='❌ Ошибка соединения';}
@@ -2695,7 +2728,7 @@ function rMyPlan(){
 
   if(!plan){
     const noplan=document.createElement('div');noplan.style.cssText='text-align:center;padding:30px 20px';
-    noplan.innerHTML='<div style="font-size:40px;margin-bottom:12px">📋</div><div style="font-size:14px;color:var(--muted);margin-bottom:16px">AI план не был получен.<br>Возможно не было ключа DeepSeek или нет интернета.</div>';
+    noplan.innerHTML='<div style="font-size:40px;margin-bottom:12px">📋</div><div style="font-size:14px;color:var(--muted);margin-bottom:16px">AI план не был получен.<br>Возможно не было ключа Groq или нет интернета.</div>';
     // Кнопка повторного запроса
     if(p){
       const retryBtn=document.createElement('button');
@@ -2859,8 +2892,9 @@ async function startup(){
     console.error('Startup error:',e);
   }
 
-  // Загружаем базу продуктов из Supabase (фоново)
+  // Загружаем базы из Supabase (фоново)
   loadFoodsDB();
+  loadExercisesDB();
 
   render();
   try{ regSW(); }catch(e){}
